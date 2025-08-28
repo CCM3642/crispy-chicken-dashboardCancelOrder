@@ -159,182 +159,630 @@
     .form-input { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem; }
     .form-group { margin-bottom: 1rem; }
     .form-label { display: block; font-weight: 500; margin-bottom: 0.25rem; color: #374151; }
+    .filter-select {
+      background-color: #dc2626;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      border: none;
+      font-weight: 500;
+    }
+    .filter-section {
+      background-color: #f9fafb;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
   <header class="bg-red-600 p-4 text-white text-center">
     <h1 class="text-2xl font-bold">نظام متابعة الطلبات الملغاة - Crispy Chicken</h1>
-    <p class="text-sm">لوحة التحكم والتقارير</p>
+    <p class="text-sm">نظام متكامل لإدارة التقارير والبيانات</p>
   </header>
   
   <main class="max-w-6xl mx-auto p-4">
-    <!-- معلومات التقرير -->
-    <div class="bg-white rounded-lg shadow p-4 mb-4">
-      <div class="flex flex-col md:flex-row justify-between items-center">
-        <div class="mb-4 md:mb-0">
+    <!-- فلتر الاختيارات -->
+    <div class="filter-section">
+      <div class="flex flex-wrap items-center justify-between">
+        <div class="flex items-center space-x-2 space-x-reverse">
+          <i class="fas fa-filter text-red-600"></i>
+          <span class="font-medium">اختر القسم:</span>
+          <select id="sectionFilter" class="filter-select" onchange="showSection()">
+            <option value="dashboard">داش بورد</option>
+            <option value="reports">تقرير</option>
+            <option value="dataEntry">ادخال</option>
+            <option value="investigation">تحقيق</option>
+            <option value="performance">اداء الخ</option>
+          </select>
+        </div>
+        <div class="text-sm text-gray-600">
+          التاريخ الميلادي: <span id="gregorianDate" class="font-medium"></span> | 
+          التاريخ الهجري: <span id="hijriDate" class="font-medium"></span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- قسم داش بورد -->
+    <div id="dashboardSection" class="tab-content active">
+      <div class="bg-white rounded-lg shadow p-4 mb-4">
+        <div class="flex flex-wrap justify-between items-center">
           <h2 class="text-lg font-semibold">لوحة التحكم</h2>
-          <p class="text-sm text-gray-600">التاريخ الميلادي: <span id="gregorianDate" class="font-medium"></span></p>
-          <p class="text-sm text-gray-600">التاريخ الهجري: <span id="hijriDate" class="font-medium"></span></p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="openDataEntryModal()" class="btn-primary">
-            <i class="fas fa-plus ml-1"></i> إدخال بيانات جديدة
-          </button>
-          <button onclick="exportData()" class="btn-secondary">
-            <i class="fas fa-file-export ml-1"></i> تصدير البيانات
-          </button>
-          <button onclick="generateDashboardReport()" class="btn-success">
-            <i class="fas fa-chart-bar ml-1"></i> تقرير لوحة التحكم
-          </button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- الإحصائيات العامة -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div class="stats-card">
-        <i class="fas fa-clipboard-list text-2xl text-red-500"></i>
-        <div class="stats-number" id="totalOrdersStat">0</div>
-        <div class="stats-label">إجمالي الطلبات</div>
-      </div>
-      <div class="stats-card">
-        <i class="fas fa-ban text-2xl text-red-500"></i>
-        <div class="stats-number" id="cancelledOrdersStat">0</div>
-        <div class="stats-label">طلبات ملغاة</div>
-      </div>
-      <div class="stats-card">
-        <i class="fas fa-undo text-2xl text-blue-500"></i>
-        <div class="stats-number" id="refundedOrdersStat">0</div>
-        <div class="stats-label">طلبات مستردة</div>
-      </div>
-      <div class="stats-card">
-        <i class="fas fa-exclamation-triangle text-2xl text-yellow-500"></i>
-        <div class="stats-number" id="pendingOrdersStat">0</div>
-        <div class="stats-label">طلبات عالقة</div>
-      </div>
-    </div>
-    
-    <!-- لوحة التحكم الديناميكية -->
-    <div class="bg-white rounded-lg shadow p-4 mb-6">
-      <div class="flex flex-wrap gap-2 mb-4">
-        <button class="tab-button active px-4 py-2 rounded-lg" onclick="showTab('channels')">
-          <i class="fas fa-broadcast-tower ml-1"></i> القنوات
-        </button>
-        <button class="tab-button px-4 py-2 rounded-lg" onclick="showTab('branches')">
-          <i class="fas fa-store ml-1"></i> الفروع
-        </button>
-        <button class="tab-button px-4 py-2 rounded-lg" onclick="showTab('trends')">
-          <i class="fas fa-chart-line ml-1"></i> الاتجاهات
-        </button>
-      </div>
-      
-      <!-- محتوى تبويب القنوات -->
-      <div id="channels-tab" class="tab-content active">
-        <h3 class="section-title">لوحة تحكم القنوات</h3>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <div class="chart-container">
-              <canvas id="channelChart"></canvas>
-            </div>
-          </div>
-          <div>
-            <div class="overflow-x-auto">
-              <table class="dashboard-table">
-                <thead>
-                  <tr>
-                    <th>القناة</th>
-                    <th>الطلبات الملغاة</th>
-                    <th>الطلبات المستردة</th>
-                    <th>الطلبات المتنازع عليها</th>
-                    <th>الطلبات بدون رد</th>
-                    <th>الإجمالي</th>
-                    <th>نسبة الإلغاء</th>
-                  </tr>
-                </thead>
-                <tbody id="channelTableBody">
-                  <!-- سيتم تحميل البيانات هنا -->
-                </tbody>
-              </table>
-            </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="exportData()" class="btn-secondary">
+              <i class="fas fa-file-export ml-1"></i> تصدير البيانات
+            </button>
+            <button onclick="generateDashboardReport()" class="btn-success">
+              <i class="fas fa-chart-bar ml-1"></i> تقرير لوحة التحكم
+            </button>
           </div>
         </div>
       </div>
       
-      <!-- محتوى تبويب الفروع -->
-      <div id="branches-tab" class="tab-content">
-        <h3 class="section-title">لوحة تحكم الفروع</h3>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <div class="chart-container">
-              <canvas id="branchChart"></canvas>
-            </div>
-          </div>
-          <div>
-            <div class="overflow-x-auto">
-              <table class="dashboard-table">
-                <thead>
-                  <tr>
-                    <th>الفرع</th>
-                    <th>الطلبات الملغاة</th>
-                    <th>الطلبات المستردة</th>
-                    <th>الطلبات العالقة</th>
-                    <th>الإجمالي</th>
-                    <th>نسبة الإلغاء</th>
-                    <th>جهة الاتصال</th>
-                  </tr>
-                </thead>
-                <tbody id="branchTableBody">
-                  <!-- سيتم تحميل البيانات هنا -->
-                </tbody>
-              </table>
-            </div>
-          </div>
+      <!-- الإحصائيات العامة -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="stats-card">
+          <i class="fas fa-clipboard-list text-2xl text-red-500"></i>
+          <div class="stats-number" id="totalOrdersStat">0</div>
+          <div class="stats-label">إجمالي الطلبات</div>
+        </div>
+        <div class="stats-card">
+          <i class="fas fa-ban text-2xl text-red-500"></i>
+          <div class="stats-number" id="cancelledOrdersStat">0</div>
+          <div class="stats-label">طلبات ملغاة</div>
+        </div>
+        <div class="stats-card">
+          <i class="fas fa-undo text-2xl text-blue-500"></i>
+          <div class="stats-number" id="refundedOrdersStat">0</div>
+          <div class="stats-label">طلبات مستردة</div>
+        </div>
+        <div class="stats-card">
+          <i class="fas fa-exclamation-triangle text-2xl text-yellow-500"></i>
+          <div class="stats-number" id="pendingOrdersStat">0</div>
+          <div class="stats-label">طلبات عالقة</div>
         </div>
       </div>
       
-      <!-- محتوى تبويب الاتجاهات -->
-      <div id="trends-tab" class="tab-content">
-        <h3 class="section-title">اتجاهات الطلبات الملغاة</h3>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <div class="chart-container">
-              <canvas id="trendChart"></canvas>
+      <!-- لوحة التحكم الديناميكية -->
+      <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button class="tab-button active px-4 py-2 rounded-lg" onclick="showTab('channels')">
+            <i class="fas fa-broadcast-tower ml-1"></i> القنوات
+          </button>
+          <button class="tab-button px-4 py-2 rounded-lg" onclick="showTab('branches')">
+            <i class="fas fa-store ml-1"></i> الفروع
+          </button>
+          <button class="tab-button px-4 py-2 rounded-lg" onclick="showTab('trends')">
+            <i class="fas fa-chart-line ml-1"></i> الاتجاهات
+          </button>
+        </div>
+        
+        <!-- محتوى تبويب القنوات -->
+        <div id="channels-tab" class="tab-content active">
+          <h3 class="section-title">لوحة تحكم القنوات</h3>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <div class="chart-container">
+                <canvas id="channelChart"></canvas>
+              </div>
+            </div>
+            <div>
+              <div class="overflow-x-auto">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>القناة</th>
+                      <th>الطلبات الملغاة</th>
+                      <th>الطلبات المستردة</th>
+                      <th>الطلبات المتنازع عليها</th>
+                      <th>الطلبات بدون رد</th>
+                      <th>الإجمالي</th>
+                      <th>نسبة الإلغاء</th>
+                    </tr>
+                  </thead>
+                  <tbody id="channelTableBody">
+                    <!-- سيتم تحميل البيانات هنا -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-          <div>
-            <div class="chart-container">
-              <canvas id="statusChart"></canvas>
+        </div>
+        
+        <!-- محتوى تبويب الفروع -->
+        <div id="branches-tab" class="tab-content">
+          <h3 class="section-title">لوحة تحكم الفروع</h3>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <div class="chart-container">
+                <canvas id="branchChart"></canvas>
+              </div>
+            </div>
+            <div>
+              <div class="overflow-x-auto">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>الفرع</th>
+                      <th>الطلبات الملغاة</th>
+                      <th>الطلبات المستردة</th>
+                      <th>الطلبات العالقة</th>
+                      <th>الإجمالي</th>
+                      <th>نسبة الإلغاء</th>
+                      <th>جهة الاتصال</th>
+                    </tr>
+                  </thead>
+                  <tbody id="branchTableBody">
+                    <!-- سيتم تحميل البيانات هنا -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- محتوى تبويب الاتجاهات -->
+        <div id="trends-tab" class="tab-content">
+          <h3 class="section-title">اتجاهات الطلبات الملغاة</h3>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+              </div>
+            </div>
+            <div>
+              <div class="chart-container">
+                <canvas id="statusChart"></canvas>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
     
-    <!-- الجدول -->
-    <div class="bg-white rounded-lg shadow p-4 mb-6">
-      <h3 class="section-title">آخر الطلبات المدخلة</h3>
-      <div class="overflow-x-auto">
-        <table id="reportTable" class="w-full border text-center text-sm">
-          <thead class="bg-red-100">
-            <tr>
-              <th class="border px-2 py-1">#</th>
-              <th class="border px-2 py-1">العلامة التجارية</th>
-              <th class="border px-2 py-1">القناة</th>
-              <th class="border px-2 py-1">الموقع</th>
-              <th class="border px-2 py-1">الحالة</th>
-              <th class="border px-2 py-1">السعر</th>
-              <th class="border px-2 py-1">عدد الطلبات</th>
-              <th class="border px-2 py-1">التاريخ</th>
-              <th class="border px-2 py-1">الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody id="reportBody">
-            <!-- سيتم تحميل الصفوف من البيانات المدخلة -->
-          </tbody>
-        </table>
+    <!-- قسم التقارير -->
+    <div id="reportsSection" class="tab-content">
+      <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <h2 class="text-lg font-semibold mb-4">التقارير</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <h3 class="font-semibold text-lg mb-2">تقرير أداء القنوات والفروع</h3>
+            <p class="text-gray-600 mb-4">تقرير شامل يوضح أداء جميع القنوات والفروع</p>
+            <button onclick="generateDashboardReport()" class="btn-secondary">
+              <i class="fas fa-chart-bar ml-1"></i> إنشاء التقرير
+            </button>
+          </div>
+          
+          <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+            <h3 class="font-semibold text-lg mb-2">تقرير الطلبات الملغاة</h3>
+            <p class="text-gray-600 mb-4">تقرير مفصل لكل طلب ملغي مع إمكانية الإرسال</p>
+            <button onclick="showCancelledOrdersReport()" class="btn-secondary">
+              <i class="fas fa-file-alt ml-1"></i> عرض الطلبات
+            </button>
+          </div>
+          
+          <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+            <h3 class="font-semibold text-lg mb-2">تقرير التحقيقات</h3>
+            <p class="text-gray-600 mb-4">تقرير يوضح جميع التحقيقات الجارية</p>
+            <button onclick="showInvestigationReport()" class="btn-secondary">
+              <i class="fas fa-search ml-1"></i> عرض التحقيقات
+            </button>
+          </div>
+          
+          <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <h3 class="font-semibold text-lg mb-2">تقرير الأداء</h3>
+            <p class="text-gray-600 mb-4">تقرير أداء الفروع والموظفين</p>
+            <button onclick="showPerformanceReport()" class="btn-secondary">
+              <i class="fas fa-tachometer-alt ml-1"></i> عرض الأداء
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="pagination" id="pagination">
-        <!-- سيتم تحميل أزرار التصفح هنا -->
+      
+      <!-- جدول التقارير السابقة -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="section-title">التقارير السابقة</h3>
+        <div class="overflow-x-auto">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>رقم التقرير</th>
+                <th>النوع</th>
+                <th>التاريخ</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTableBody">
+              <tr>
+                <td class="border px-2 py-1">#001</td>
+                <td class="border px-2 py-1">تقرير أداء</td>
+                <td class="border px-2 py-1">28/08/2025</td>
+                <td class="border px-2 py-1">مكتمل</td>
+                <td class="border px-2 py-1">
+                  <button class="btn-secondary text-sm">عرض</button>
+                  <button class="btn-success text-sm">إرسال</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="border px-2 py-1">#002</td>
+                <td class="border px-2 py-1">تحقيق</td>
+                <td class="border px-2 py-1">27/08/2025</td>
+                <td class="border px-2 py-1">قيد المعالجة</td>
+                <td class="border px-2 py-1">
+                  <button class="btn-secondary text-sm">عرض</button>
+                  <button class="btn-warning text-sm">متابعة</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- قسم إدخال البيانات -->
+    <div id="dataEntrySection" class="tab-content">
+      <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <h2 class="text-lg font-semibold mb-4">إدخال بيانات الطلبات الملغاة</h2>
+        <form id="orderForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="form-group">
+            <label for="brand" class="form-label">العلامة التجارية</label>
+            <select id="brand" class="form-input w-full" required>
+              <option value="Crispy Chicken">Crispy Chicken</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="channel" class="form-label">القناة</label>
+            <select id="channel" class="form-input w-full" required>
+              <option value="Talabat">Talabat</option>
+              <option value="Careem Now">Careem Now</option>
+              <option value="Deliveroo">Deliveroo</option>
+              <option value="Noon Food">Noon Food</option>
+              <option value="Smiles">Smiles</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="location" class="form-label">الموقع</label>
+            <select id="location" class="form-input w-full" required>
+              <option value="Electra">Electra</option>
+              <option value="Mouroor">Mouroor</option>
+              <option value="Khalydiha">Khalydiha</option>
+              <option value="Satwa">Satwa</option>
+              <option value="Hamdan">Hamdan</option>
+              <option value="Barsha">Barsha</option>
+              <option value="Shabiha">Shabiha</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="status" class="form-label">الحالة</label>
+            <select id="status" class="form-input w-full" required>
+              <option value="Order Cancelled">Order Cancelled</option>
+              <option value="Order Refunded">Order Refunded</option>
+              <option value="Order Disputed">Order Disputed</option>
+              <option value="Unanswered">Unanswered</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="price" class="form-label">السعر</label>
+            <input type="text" id="price" class="form-input w-full" placeholder="AED 0.00" required>
+          </div>
+          <div class="form-group">
+            <label for="orderCount" class="form-label">عدد الطلبات</label>
+            <input type="number" id="orderCount" class="form-input w-full" min="1" value="1" required>
+          </div>
+          <div class="form-group md:col-span-2">
+            <button type="submit" class="btn-primary w-full">
+              <i class="fas fa-plus ml-1"></i> إضافة الطلب
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- آخر الطلبات المدخلة -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="section-title">آخر الطلبات المدخلة</h3>
+        <div class="overflow-x-auto">
+          <table id="reportTable" class="w-full border text-center text-sm">
+            <thead class="bg-red-100">
+              <tr>
+                <th class="border px-2 py-1">#</th>
+                <th class="border px-2 py-1">العلامة التجارية</th>
+                <th class="border px-2 py-1">القناة</th>
+                <th class="border px-2 py-1">الموقع</th>
+                <th class="border px-2 py-1">الحالة</th>
+                <th class="border px-2 py-1">السعر</th>
+                <th class="border px-2 py-1">عدد الطلبات</th>
+                <th class="border px-2 py-1">التاريخ</th>
+                <th class="border px-2 py-1">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="reportBody">
+              <!-- سيتم تحميل الصفوف من البيانات المدخلة -->
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination">
+          <!-- سيتم تحميل أزرار التصفح هنا -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- قسم التحقيق -->
+    <div id="investigationSection" class="tab-content">
+      <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <h2 class="text-lg font-semibold mb-4">التحقيقات الجارية</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-semibold">التحقيقات العاجلة</h3>
+              <span class="bg-red-600 text-white px-2 py-1 rounded-full text-sm">3</span>
+            </div>
+            <p class="text-gray-600 mb-3">التحقيقات التي تتطلب تدخل فوري</p>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>طلب #12345 - Talabat</span>
+                <span class="text-red-600 font-medium">معلق منذ يومين</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>طلب #12346 - Careem</span>
+                <span class="text-red-600 font-medium">معلق منذ يوم</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>طلب #12347 - Noon</span>
+                <span class="text-red-600 font-medium">معلق منذ 3 أيام</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-semibold">التحقيقات قيد المعالجة</h3>
+              <span class="bg-yellow-600 text-white px-2 py-1 rounded-full text-sm">5</span>
+            </div>
+            <p class="text-gray-600 mb-3">التحقيقات التي جاري العمل عليها</p>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>طلب #12348 - Talabat</span>
+                <span class="text-yellow-600 font-medium">قيد المراجعة</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>طلب #12349 - Deliveroo</span>
+                <span class="text-yellow-600 font-medium">انتظار الرد</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <h3 class="section-title">بدء تحقيق جديد</h3>
+          <form class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="form-group">
+              <label class="form-label">رقم الطلب</label>
+              <input type="text" class="form-input" placeholder="أدخل رقم الطلب">
+            </div>
+            <div class="form-group">
+              <label class="form-label">سبب التحقيق</label>
+              <select class="form-input">
+                <option>إلغاء غير مبرر</option>
+                <option>تأخير في التسليم</option>
+                <option>مشكلة في الدفع</option>
+                <option>أخرى</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">الأولوية</label>
+              <select class="form-input">
+                <option>عاجل</option>
+                <option>متوسط</option>
+                <option>منخفض</option>
+              </select>
+            </div>
+            <div class="form-group md:col-span-3">
+              <label class="form-label">ملاحظات إضافية</label>
+              <textarea class="form-input w-full" rows="3" placeholder="أدخل أي ملاحظات إضافية"></textarea>
+            </div>
+            <div class="form-group md:col-span-3">
+              <button type="button" class="btn-primary" onclick="startNewInvestigation()">
+                <i class="fas fa-plus ml-1"></i> بدء التحقيق
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- جدول التحقيقات -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="section-title">سجل التحقيقات</h3>
+        <div class="overflow-x-auto">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>رقم التحقيق</th>
+                <th>رقم الطلب</th>
+                <th>القناة</th>
+                <th>الفرع</th>
+                <th>السبب</th>
+                <th>الحالة</th>
+                <th>التاريخ</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border px-2 py-1">#INV001</td>
+                <td class="border px-2 py-1">#12345</td>
+                <td class="border px-2 py-1">Talabat</td>
+                <td class="border px-2 py-1">Electra</td>
+                <td class="border px-2 py-1">إلغاء غير مبرر</td>
+                <td class="border px-2 py-1"><span class="bg-red-600 text-white px-2 py-1 rounded text-xs">عاجل</span></td>
+                <td class="border px-2 py-1">28/08/2025</td>
+                <td class="border px-2 py-1">
+                  <button class="btn-secondary text-sm mr-1">عرض</button>
+                  <button class="btn-success text-sm">تحديث</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="border px-2 py-1">#INV002</td>
+                <td class="border px-2 py-1">#12346</td>
+                <td class="border px-2 py-1">Careem</td>
+                <td class="border px-2 py-1">Mouroor</td>
+                <td class="border px-2 py-1">تأخير في التسليم</td>
+                <td class="border px-2 py-1"><span class="bg-yellow-600 text-white px-2 py-1 rounded text-xs">قيد المعالجة</span></td>
+                <td class="border px-2 py-1">27/08/2025</td>
+                <td class="border px-2 py-1">
+                  <button class="btn-secondary text-sm mr-1">عرض</button>
+                  <button class="btn-warning text-sm">متابعة</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- قسم الأداء -->
+    <div id="performanceSection" class="tab-content">
+      <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <h2 class="text-lg font-semibold mb-4">تقرير الأداء</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-semibold">أفضل الأداء</h3>
+              <i class="fas fa-trophy text-green-600 text-xl"></i>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>فرع Electra</span>
+                <span class="text-green-600 font-medium">98% معدل رضا</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>فرع Khalydiha</span>
+                <span class="text-green-600 font-medium">96% معدل رضا</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>فرع Satwa</span>
+                <span class="text-green-600 font-medium">95% معدل رضا</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-semibold">يحتاج تحسين</h3>
+              <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>فرع Barsha</span>
+                <span class="text-red-600 font-medium">78% معدل رضا</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>فرع Shabiha</span>
+                <span class="text-red-600 font-medium">82% معدل رضا</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>فرع Hamdan</span>
+                <span class="text-red-600 font-medium">85% معدل رضا</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-semibold">متوسط الأداء</h3>
+              <i class="fas fa-minus text-blue-600 text-xl"></i>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>فرع Mouroor</span>
+                <span class="text-blue-600 font-medium">90% معدل رضا</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>قناة Talabat</span>
+                <span class="text-blue-600 font-medium">88% معدل رضا</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-white rounded">
+                <span>قناة Noon</span>
+                <span class="text-blue-600 font-medium">92% معدل رضا</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <h3 class="section-title">مؤشرات الأداء</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+              </div>
+            </div>
+            <div>
+              <div class="chart-container">
+                <canvas id="satisfactionChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- جدول الأداء -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="section-title">تفاصيل الأداء</h3>
+        <div class="overflow-x-auto">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>الفرع/القناة</th>
+                <th>عدد الطلبات</th>
+                <th>الطلبات الملغاة</th>
+                <th>نسبة الإلغاء</th>
+                <th>معدل الرضا</th>
+                <th>التقييم</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border px-2 py-1">Electra</td>
+                <td class="border px-2 py-1">245</td>
+                <td class="border px-2 py-1">12</td>
+                <td class="border px-2 py-1">4.9%</td>
+                <td class="border px-2 py-1">98%</td>
+                <td class="border px-2 py-1"><span class="text-green-600 font-medium">ممتاز</span></td>
+                <td class="border px-2 py-1">
+                  <button class="btn-secondary text-sm">تفاصيل</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="border px-2 py-1">Mouroor</td>
+                <td class="border px-2 py-1">198</td>
+                <td class="border px-2 py-1">18</td>
+                <td class="border px-2 py-1">9.1%</td>
+                <td class="border px-2 py-1">90%</td>
+                <td class="border px-2 py-1"><span class="text-blue-600 font-medium">جيد</span></td>
+                <td class="border px-2 py-1">
+                  <button class="btn-secondary text-sm">تفاصيل</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="border px-2 py-1">Barsha</td>
+                <td class="border px-2 py-1">156</td>
+                <td class="border px-2 py-1">32</td>
+                <td class="border px-2 py-1">20.5%</td>
+                <td class="border px-2 py-1">78%</td>
+                <td class="border px-2 py-1"><span class="text-red-600 font-medium">ضعيف</span></td>
+                <td class="border px-2 py-1">
+                  <button class="btn-warning text-sm">تحسين</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
     
@@ -535,7 +983,7 @@
     };
     
     // ---- CHARTS ----
-    let channelChart, branchChart, trendChart, statusChart;
+    let channelChart, branchChart, trendChart, statusChart, performanceChart, satisfactionChart;
     
     // ---- INITIALIZE ----
     window.addEventListener('DOMContentLoaded', init);
@@ -587,6 +1035,19 @@
       localStorage.setItem('cancelledOrders', JSON.stringify(orders));
     }
     
+    // ---- SHOW SECTION ----
+    function showSection() {
+      const section = document.getElementById('sectionFilter').value;
+      
+      // إخفاء جميع الأقسام
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // إظهار القسم المحدد
+      document.getElementById(section + 'Section').classList.add('active');
+    }
+    
     // ---- HANDLE FORM SUBMIT ----
     function handleFormSubmit(e) {
       e.preventDefault();
@@ -609,10 +1070,9 @@
       updateGeneralStats();
       updateCharts();
       
-      // إعادة تعيين النموذج وإغلاق النافذة
+      // إعادة تعيين النموذج
       document.getElementById('orderForm').reset();
       document.getElementById('orderCount').value = 1;
-      closeDataEntryModal();
       
       // إظهار رسالة نجاح
       showNotification('تمت إضافة الطلب بنجاح', 'success');
@@ -621,6 +1081,8 @@
     // ---- DISPLAY ORDERS ----
     function displayOrders() {
       const tbody = document.getElementById('reportBody');
+      if (!tbody) return;
+      
       tbody.innerHTML = '';
       
       // حساب الصفحات
@@ -660,6 +1122,8 @@
     // ---- UPDATE PAGINATION ----
     function updatePagination(totalPages) {
       const pagination = document.getElementById('pagination');
+      if (!pagination) return;
+      
       pagination.innerHTML = '';
       
       // زر السابق
@@ -721,6 +1185,8 @@
     // ---- UPDATE CHANNEL DASHBOARD ----
     function updateChannelDashboard() {
       const tbody = document.getElementById('channelTableBody');
+      if (!tbody) return;
+      
       tbody.innerHTML = '';
       
       // حساب الإحصائيات لكل قناة
@@ -762,6 +1228,8 @@
     // ---- UPDATE BRANCH DASHBOARD ----
     function updateBranchDashboard() {
       const tbody = document.getElementById('branchTableBody');
+      if (!tbody) return;
+      
       tbody.innerHTML = '';
       
       // حساب الإحصائيات لكل فرع
@@ -806,10 +1274,14 @@
     // ---- INITIALIZE CHARTS ----
     function initializeCharts() {
       // إعداد الرسوم البيانية
-      const channelCtx = document.getElementById('channelChart').getContext('2d');
-      const branchCtx = document.getElementById('branchChart').getContext('2d');
-      const trendCtx = document.getElementById('trendChart').getContext('2d');
-      const statusCtx = document.getElementById('statusChart').getContext('2d');
+      const channelCtx = document.getElementById('channelChart');
+      const branchCtx = document.getElementById('branchChart');
+      const trendCtx = document.getElementById('trendChart');
+      const statusCtx = document.getElementById('statusChart');
+      const performanceCtx = document.getElementById('performanceChart');
+      const satisfactionCtx = document.getElementById('satisfactionChart');
+      
+      if (!channelCtx || !branchCtx || !trendCtx || !statusCtx || !performanceCtx || !satisfactionCtx) return;
       
       // رسم بياني للقنوات
       channelChart = new Chart(channelCtx, {
@@ -884,7 +1356,7 @@
           plugins: {
             title: {
               display: true,
-              text: 'اتجاه الطلبات الملغاة'
+              text: 'اتجاهات الطلبات الملغاة'
             }
           }
         }
@@ -912,13 +1384,59 @@
         }
       });
       
+      // رسم بياني للأداء
+      performanceChart = new Chart(performanceCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Electra', 'Mouroor', 'Khalydiha', 'Satwa', 'Hamdan', 'Barsha', 'Shabiha'],
+          datasets: [{
+            label: 'نسبة الإلغاء',
+            data: [4.9, 9.1, 3.2, 2.8, 5.6, 20.5, 8.3],
+            backgroundColor: '#dc2626'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'نسب الإلغاء حسب الفرع'
+            }
+          }
+        }
+      });
+      
+      // رسم بياني لمعدل الرضا
+      satisfactionChart = new Chart(satisfactionCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Electra', 'Mouroor', 'Khalydiha', 'Satwa', 'Hamdan', 'Barsha', 'Shabiha'],
+          datasets: [{
+            label: 'معدل الرضا',
+            data: [98, 90, 96, 95, 85, 78, 82],
+            backgroundColor: '#16a34a'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'معدل الرضا حسب الفرع'
+            }
+          }
+        }
+      });
+      
       // تحديث الرسوم البيانية
       updateCharts();
     }
     
     // ---- UPDATE CHARTS ----
     function updateCharts() {
-      if (!channelChart || !branchChart || !trendChart || !statusChart) return;
+      if (!channelChart || !branchChart || !trendChart || !statusChart || !performanceChart || !satisfactionChart) return;
       
       // تحديث بيانات القنوات
       const channels = ["Talabat", "Careem Now", "Deliveroo", "Noon Food", "Smiles"];
@@ -1165,241 +1683,4 @@
     
     // ---- GENERATE BRANCH REPORT ROWS ----
     function generateBranchReportRows() {
-      const branches = ["Electra", "Mouroor", "Khalydiha", "Satwa", "Hamdan", "Barsha", "Shabiha"];
-      let rowsHTML = '';
-      
-      branches.forEach(branch => {
-        const branchOrders = orders.filter(order => order.location === branch);
-        const cancelled = branchOrders.filter(order => order.status === 'Order Cancelled').reduce((sum, order) => sum + order.orderCount, 0);
-        const refunded = branchOrders.filter(order => order.status === 'Order Refunded').reduce((sum, order) => sum + order.orderCount, 0);
-        const pending = branchOrders.filter(order => order.status === 'Order Disputed' || order.status === 'Unanswered').reduce((sum, order) => sum + order.orderCount, 0);
-        const total = branchOrders.reduce((sum, order) => sum + order.orderCount, 0);
-        
-        // حساب نسبة الإلغاء
-        const cancellationRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
-        
-        rowsHTML += `
-          <tr>
-            <td class="border px-2 py-1 font-medium">${branch}</td>
-            <td class="border px-2 py-1">${cancelled}</td>
-            <td class="border px-2 py-1">${refunded}</td>
-            <td class="border px-2 py-1">${pending}</td>
-            <td class="border px-2 py-1 font-bold">${total}</td>
-            <td class="border px-2 py-1">
-              <div class="flex items-center">
-                <span class="ml-1">${cancellationRate}%</span>
-                <div class="progress-bar flex-grow">
-                  <div class="progress-fill" style="width: ${cancellationRate}%"></div>
-                </div>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
-      
-      return rowsHTML;
-    }
-    
-    // ---- SHOW TAB ----
-    function showTab(tabName) {
-      // إخفاء كل المحتويات
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      
-      // إزالة الفئة النشطة من كل الأزرار
-      document.querySelectorAll('.tab-button').forEach(button => {
-        button.classList.remove('active');
-      });
-      
-      // إظهار التبويب المحدد
-      document.getElementById(`${tabName}-tab`).classList.add('active');
-      
-      // إضافة الفئة النشطة للزر المضغوط
-      event.target.classList.add('active');
-    }
-    
-    // ---- DATA ENTRY MODAL ----
-    function openDataEntryModal() {
-      document.getElementById('dataEntryModal').style.display = 'block';
-    }
-    
-    function closeDataEntryModal() {
-      document.getElementById('dataEntryModal').style.display = 'none';
-    }
-    
-    // ---- DETAILED REPORT ----
-    function generateDetailedReport(orderId) {
-      const order = orders.find(o => o.id == orderId);
-      if (!order) return;
-      
-      // تحديث التقرير الرسمي
-      document.getElementById('reportBranch').textContent = order.location;
-      document.getElementById('reportChannel').textContent = order.channel;
-      document.getElementById('reportStatus').textContent = order.status;
-      document.getElementById('reportPrice').textContent = order.price;
-      document.getElementById('reportOrderCount').textContent = order.orderCount;
-      
-      // تحديث رسالة WhatsApp
-      const whatsappMessage = `مرحباً،
-طلبك من ${order.brand} عبر ${order.channel} (${order.location}) تم إلغاؤه بتاريخ ${new Date(order.date).toLocaleDateString('ar-SA')}.
-قيمة الطلب: ${order.price}
-الحالة: ${order.status}
-
-يرجى الرد على هذه الأسئلة في أقرب وقت لتسوية الأمر وتجنب أي خصومات لاحقة:
-1) هل تم تسليم الطلب؟
-2) هل الإلغاء بإرادتك؟
-3) هل لديك إثبات لذلك؟
-
-شكراً لتعاونك.`;
-      
-      document.getElementById('whatsappMessage').value = whatsappMessage;
-      
-      // حفظ معرف الطلب الحالي
-      const detailedReport = document.getElementById('detailedReport');
-      detailedReport.dataset.orderId = orderId;
-      detailedReport.classList.remove('hidden');
-      
-      // التمرير إلى التقرير المفصل
-      detailedReport.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    // ---- COPY WHATSAPP MESSAGE ----
-    function copyWhatsAppMessage() {
-      const whatsappMessage = document.getElementById('whatsappMessage');
-      whatsappMessage.select();
-      document.execCommand('copy');
-      
-      // تغيير نص الزر مؤقتاً
-      const button = event.target;
-      const originalText = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-check ml-1"></i> تم النسخ!';
-      
-      setTimeout(() => {
-        button.innerHTML = originalText;
-      }, 2000);
-    }
-    
-    // ---- EXPORT TO PDF ----
-    function exportToPDF() {
-      // تحويل التقرير إلى PDF باستخدام html2canvas و jsPDF
-      const { jsPDF } = window.jspdf;
-      
-      const element = document.getElementById('detailedReport');
-      html2canvas(element, {
-        scale: 2,
-        logging: true,
-        useCORS: true
-      }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`تقرير_طلب_ملغي_${new Date().toISOString().slice(0, 10)}.pdf`);
-        
-        showNotification('تم تصدير التقرير كملف PDF بنجاح', 'success');
-      });
-    }
-    
-    // ---- SEND REPORT EMAIL ----
-    function sendReportEmail() {
-      const orderId = document.getElementById('detailedReport').dataset.orderId;
-      const order = orders.find(o => o.id == orderId);
-      if (!order) return;
-      
-      // الحصول على معلومات الاتصال للفرع
-      const branchContact = contacts.branches[order.location];
-      const managementContacts = [
-        contacts.management["Mr. Mahmoud Shaheen"],
-        contacts.management["Mohammed T"]
-      ];
-      
-      // إنشاء محتوى البريد الإلكتروني
-      const subject = `تقرير طلب ملغي - ${order.location} - ${order.channel}`;
-      const body = `تم إعداد تقرير لطلب ملغي من فرع ${order.location} عبر قناة ${order.channel}.
-
-تفاصيل الطلب:
-- الفرع: ${order.location}
-- القناة: ${order.channel}
-- الحالة: ${order.status}
-- السعر: ${order.price}
-- عدد الطلبات: ${order.orderCount}
-
-يرجى مراجعة التقرير المرفق واتخاذ الإجراءات اللازمة.
-
-مع تحيات،
-فريق متابعة الطلبات الملغاة`;
-      
-      // إنشاء رابط mailto
-      const emailLink = `mailto:${managementContacts.map(c => c.email).join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      
-      // فتح رابط البريد الإلكتروني
-      window.location.href = emailLink;
-      
-      showNotification('جاري فتح البريد الإلكتروني...', 'info');
-    }
-    
-    // ---- SEND REPORT WHATSAPP ----
-    function sendReportWhatsApp() {
-      const orderId = document.getElementById('detailedReport').dataset.orderId;
-      const order = orders.find(o => o.id == orderId);
-      if (!order) return;
-      
-      // الحصول على معلومات الاتصال للفرع
-      const branchContact = contacts.branches[order.location];
-      
-      // إنشاء رسالة WhatsApp
-      const whatsappMessage = document.getElementById('whatsappMessage').value;
-      
-      // إنشاء رابط WhatsApp
-      const whatsappLink = `https://wa.me/${branchContact.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(whatsappMessage)}`;
-      
-      // فتح رابط WhatsApp
-      window.open(whatsappLink, '_blank');
-      
-      showNotification('جاري فتح WhatsApp...', 'info');
-    }
-    
-    // ---- SHOW NOTIFICATION ----
-    function showNotification(message, type) {
-      // إزالة أي إشعارات موجودة
-      const existingNotifications = document.querySelectorAll('.notification');
-      existingNotifications.forEach(notification => notification.remove());
-      
-      // إنشاء إشعار جديد
-      const notification = document.createElement('div');
-      notification.className = `notification ${type}`;
-      notification.textContent = message;
-      document.body.appendChild(notification);
-      
-      // إظهار الإشعار
-      setTimeout(() => {
-        notification.classList.add('show');
-      }, 10);
-      
-      // إخفاء الإشعار بعد 3 ثواني
-      setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-          notification.remove();
-        }, 300);
-      }, 3000);
-    }
-    
-    // ---- CLOSE MODAL WHEN CLICKING OUTSIDE ----
-    window.onclick = function(event) {
-      const modal = document.getElementById('dataEntryModal');
-      if (event.target == modal) {
-        closeDataEntryModal();
-      }
-    }
-  </script>
-  
-  <!-- إضافة مكتبات PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-</body>
-</html>
+      const branches = ["Electra", "Mouroor", "Khalydiha", "Satwa", "Hamdan",
