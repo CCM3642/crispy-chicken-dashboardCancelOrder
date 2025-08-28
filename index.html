@@ -1,1 +1,118 @@
-<!DOCTYPE html><html><head><title>Crispy Chicken</title></head><body></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Crispy Chicken – Cancelled Orders Report</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/tabletop@1.6.1/tabletop.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="bg-yellow-400 p-4 border-b border-red-600 text-center">
+    <h1 class="text-2xl font-bold">Cancelled / Disputed Orders Report</h1>
+    <p class="text-sm">Daily – Weekly – Monthly Reports</p>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4">
+    <!-- Filter -->
+    <div class="flex items-center gap-3 mb-4">
+      <label class="font-semibold">Filter by Period:</label>
+      <select id="filterPeriod" class="border rounded p-1">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+      </select>
+      <button onclick="sendReport()" class="ml-auto bg-red-600 text-white px-3 py-1 rounded">Send Report</button>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table id="reportTable" class="w-full border text-center text-sm">
+        <thead class="bg-yellow-100">
+          <tr>
+            <th class="border px-2 py-1">Date</th>
+            <th class="border px-2 py-1">Location</th>
+            <th class="border px-2 py-1">Aggregator</th>
+            <th class="border px-2 py-1">Order Ref</th>
+            <th class="border px-2 py-1">Bill Amount</th>
+            <th class="border px-2 py-1">Final Status</th>
+            <th class="border px-2 py-1">Manager Response</th>
+          </tr>
+        </thead>
+        <tbody id="reportBody">
+          <!-- Rows will be loaded from Google Sheets -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    // ---- CONFIG ----
+    const sheetURL = "YOUR_GOOGLE_SHEET_URL"; // ضع رابط Google Sheets
+    const sheetName = "Sheet1"; 
+
+    const apiURL = "YOUR_WEB_APP_URL"; // ضع رابط Google Apps Script
+
+    // ---- LOAD DATA ----
+    window.addEventListener('DOMContentLoaded', init);
+
+    function init() {
+      Tabletop.init({
+        key: sheetURL,
+        simpleSheet: true,
+        callback: showInfo
+      });
+    }
+
+    function showInfo(data) {
+      let tbody = document.getElementById("reportBody");
+      tbody.innerHTML = "";
+
+      data.forEach(row => {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="border px-2 py-1">${row.Date}</td>
+          <td class="border px-2 py-1">${row.Location}</td>
+          <td class="border px-2 py-1">${row.Aggregator}</td>
+          <td class="border px-2 py-1">${row.OrderRef}</td>
+          <td class="border px-2 py-1">${row.BillAmount}</td>
+          <td class="border px-2 py-1">${row.FinalStatus}</td>
+          <td class="border px-2 py-1">
+            <button onclick="setResponse(this,'Approved ✅')" class="bg-green-500 text-white px-2 py-1 rounded">✔</button>
+            <button onclick="setResponse(this,'Rejected ❌')" class="bg-red-500 text-white px-2 py-1 rounded">❌</button>
+            <div class="responseText mt-1 text-xs font-semibold text-blue-600">${row.ManagerResponse || ""}</div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ---- RESPONSE BUTTON ----
+    function setResponse(button, text) {
+      let cell = button.parentElement;
+      let responseDiv = cell.querySelector(".responseText");
+      responseDiv.innerText = text;
+      cell.querySelectorAll("button").forEach(btn => btn.style.display = "none");
+
+      // احصل على OrderRef من الصف
+      let row = button.closest("tr");
+      let orderRef = row.cells[3].innerText; // العمود الرابع = OrderRef
+
+      // ابعت للـ Google Apps Script API
+      fetch(apiURL, {
+        method: "POST",
+        body: JSON.stringify({ orderRef: orderRef, response: text }),
+        headers: { "Content-Type": "application/json" }
+      })
+      .then(res => res.text())
+      .then(msg => console.log("✅ Saved to Google Sheets:", msg))
+      .catch(err => console.error("❌ Error:", err));
+    }
+
+    // ---- SEND REPORT (EmailJS placeholder) ----
+    function sendReport() {
+      alert("📧 Report would be sent via EmailJS (configure service).");
+    }
+  </script>
+</body>
+</html>
