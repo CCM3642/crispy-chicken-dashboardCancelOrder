@@ -1,75 +1,112 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>Crispy Chicken – Cancelled Orders Report</title>
+  <title>تقرير الطلبات الملغاة – نسختك الشخصية</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.jsdelivr.net/npm/tabletop@1.6.1/tabletop.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Tajawal', sans-serif; }
+    .response-cell { min-width: 120px; }
+  </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
   <header class="bg-yellow-400 p-4 border-b border-red-600 text-center">
-    <h1 class="text-2xl font-bold">Cancelled / Disputed Orders Report</h1>
-    <p class="text-sm">Daily – Weekly – Monthly Reports</p>
+    <h1 class="text-2xl font-bold">تقرير الطلبات الملغية والمتنازع عليها</h1>
+    <p class="text-sm">تقريرك الشخصي اليومي</p>
   </header>
-
+  
   <main class="max-w-6xl mx-auto p-4">
-    <!-- Filter -->
-    <div class="flex items-center gap-3 mb-4">
-      <label class="font-semibold">Filter by Period:</label>
-      <select id="filterPeriod" class="border rounded p-1">
-        <option value="daily">Daily</option>
-        <option value="weekly">Weekly</option>
-        <option value="monthly">Monthly</option>
-      </select>
-      <button onclick="sendReport()" class="ml-auto bg-red-600 text-white px-3 py-1 rounded">Send Report</button>
+    <!-- معلومات التقرير -->
+    <div class="bg-white rounded-lg shadow p-4 mb-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="text-lg font-semibold">معلومات التقرير</h2>
+          <p class="text-sm text-gray-600">المعد: <span class="font-medium">أنت</span> | التاريخ: <span id="reportDate" class="font-medium"></span></p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="saveToLocal()" class="bg-blue-600 text-white px-3 py-1 rounded">حفظ محلي</button>
+          <button onclick="sendReport()" class="bg-green-600 text-white px-3 py-1 rounded">إرسال التقرير</button>
+        </div>
+      </div>
     </div>
-
-    <!-- Table -->
-    <div class="overflow-x-auto">
+    
+    <!-- الجدول -->
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
       <table id="reportTable" class="w-full border text-center text-sm">
         <thead class="bg-yellow-100">
           <tr>
-            <th class="border px-2 py-1">Date</th>
-            <th class="border px-2 py-1">Location</th>
-            <th class="border px-2 py-1">Aggregator</th>
-            <th class="border px-2 py-1">Order Ref</th>
-            <th class="border px-2 py-1">Bill Amount</th>
-            <th class="border px-2 py-1">Final Status</th>
-            <th class="border px-2 py-1">Manager Response</th>
+            <th class="border px-2 py-1">التاريخ</th>
+            <th class="border px-2 py-1">الموقع</th>
+            <th class="border px-2 py-1">المجمع</th>
+            <th class="border px-2 py-1">رقم الطلب</th>
+            <th class="border px-2 py-1">قيمة الفاتورة</th>
+            <th class="border px-2 py-1">الحالة النهائية</th>
+            <th class="border px-2 py-1">رد المدير</th>
+            <th class="border px-2 py-1">إجراءات</th>
           </tr>
         </thead>
         <tbody id="reportBody">
-          <!-- Rows will be loaded from Google Sheets -->
+          <!-- سيتم تحميل الصفوف من Google Sheets -->
         </tbody>
       </table>
     </div>
+    
+    <!-- إحصائيات التقرير -->
+    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white rounded-lg shadow p-4 text-center">
+        <h3 class="font-semibold">إجمالي الطلبات</h3>
+        <p id="totalOrders" class="text-2xl font-bold">0</p>
+      </div>
+      <div class="bg-white rounded-lg shadow p-4 text-center">
+        <h3 class="font-semibold">طلبات تمت مراجعتها</h3>
+        <p id="reviewedOrders" class="text-2xl font-bold text-green-600">0</p>
+      </div>
+      <div class="bg-white rounded-lg shadow p-4 text-center">
+        <h3 class="font-semibold">طلبات قيد المراجعة</h3>
+        <p id="pendingOrders" class="text-2xl font-bold text-yellow-600">0</p>
+      </div>
+    </div>
   </main>
-
+  
   <script>
     // ---- CONFIG ----
     const sheetURL = "YOUR_GOOGLE_SHEET_URL"; // ضع رابط Google Sheets
     const sheetName = "Sheet1"; 
-
     const apiURL = "YOUR_WEB_APP_URL"; // ضع رابط Google Apps Script
-
-    // ---- LOAD DATA ----
+    
+    // ---- INITIALIZE ----
     window.addEventListener('DOMContentLoaded', init);
-
+    
     function init() {
+      // عرض التاريخ الحالي
+      document.getElementById('reportDate').textContent = new Date().toLocaleDateString('ar-SA');
+      
+      // تحميل البيانات من Google Sheets
       Tabletop.init({
         key: sheetURL,
         simpleSheet: true,
         callback: showInfo
       });
+      
+      // تحميل البيانات المحلية إذا وجدت
+      loadLocalData();
     }
-
+    
+    // ---- DISPLAY DATA ----
     function showInfo(data) {
       let tbody = document.getElementById("reportBody");
       tbody.innerHTML = "";
-
+      
       data.forEach(row => {
         let tr = document.createElement("tr");
+        tr.dataset.orderRef = row.OrderRef;
+        
+        // التحقق مما إذا كان هناك رد مسجل محلياً
+        const localResponse = getLocalResponse(row.OrderRef);
+        
         tr.innerHTML = `
           <td class="border px-2 py-1">${row.Date}</td>
           <td class="border px-2 py-1">${row.Location}</td>
@@ -77,41 +114,119 @@
           <td class="border px-2 py-1">${row.OrderRef}</td>
           <td class="border px-2 py-1">${row.BillAmount}</td>
           <td class="border px-2 py-1">${row.FinalStatus}</td>
+          <td class="border px-2 py-1 response-cell">
+            <div class="responseText text-xs font-semibold ${localResponse.status === 'approved' ? 'text-green-600' : localResponse.status === 'rejected' ? 'text-red-600' : 'text-blue-600'}">
+              ${localResponse.text || row.ManagerResponse || "لم يتم الرد بعد"}
+            </div>
+          </td>
           <td class="border px-2 py-1">
-            <button onclick="setResponse(this,'Approved ✅')" class="bg-green-500 text-white px-2 py-1 rounded">✔</button>
-            <button onclick="setResponse(this,'Rejected ❌')" class="bg-red-500 text-white px-2 py-1 rounded">❌</button>
-            <div class="responseText mt-1 text-xs font-semibold text-blue-600">${row.ManagerResponse || ""}</div>
+            <button onclick="setResponse('${row.OrderRef}', 'approved', 'موافقة ✅')" 
+                    class="bg-green-500 text-white px-2 py-1 rounded text-sm ${localResponse.status ? 'opacity-50' : ''}" 
+                    ${localResponse.status ? 'disabled' : ''}>
+              موافقة
+            </button>
+            <button onclick="setResponse('${row.OrderRef}', 'rejected', 'رفض ❌')" 
+                    class="bg-red-500 text-white px-2 py-1 rounded text-sm ${localResponse.status ? 'opacity-50' : ''}" 
+                    ${localResponse.status ? 'disabled' : ''}>
+              رفض
+            </button>
           </td>
         `;
+        
         tbody.appendChild(tr);
       });
+      
+      updateStatistics();
     }
-
-    // ---- RESPONSE BUTTON ----
-    function setResponse(button, text) {
-      let cell = button.parentElement;
-      let responseDiv = cell.querySelector(".responseText");
+    
+    // ---- RESPONSE HANDLING ----
+    function setResponse(orderRef, status, text) {
+      // تحديث الواجهة
+      const row = document.querySelector(`tr[data-order-ref="${orderRef}"]`);
+      const responseDiv = row.querySelector('.responseText');
       responseDiv.innerText = text;
-      cell.querySelectorAll("button").forEach(btn => btn.style.display = "none");
-
-      // احصل على OrderRef من الصف
-      let row = button.closest("tr");
-      let orderRef = row.cells[3].innerText; // العمود الرابع = OrderRef
-
-      // ابعت للـ Google Apps Script API
+      responseDiv.className = `responseText text-xs font-semibold ${status === 'approved' ? 'text-green-600' : 'text-red-600'}`;
+      
+      // تعطيل الأزرار
+      const buttons = row.querySelectorAll('button');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.add('opacity-50');
+      });
+      
+      // حفظ الرد محلياً
+      saveLocalResponse(orderRef, status, text);
+      
+      // إرسال الرد إلى Google Sheets
       fetch(apiURL, {
         method: "POST",
         body: JSON.stringify({ orderRef: orderRef, response: text }),
         headers: { "Content-Type": "application/json" }
       })
       .then(res => res.text())
-      .then(msg => console.log("✅ Saved to Google Sheets:", msg))
-      .catch(err => console.error("❌ Error:", err));
+      .then(msg => console.log("✅ تم الحفظ في Google Sheets:", msg))
+      .catch(err => console.error("❌ خطأ:", err));
+      
+      // تحديث الإحصائيات
+      updateStatistics();
     }
-
-    // ---- SEND REPORT (EmailJS placeholder) ----
+    
+    // ---- LOCAL STORAGE ----
+    function saveLocalResponse(orderRef, status, text) {
+      const responses = JSON.parse(localStorage.getItem('orderResponses') || '{}');
+      responses[orderRef] = { status, text, date: new Date().toISOString() };
+      localStorage.setItem('orderResponses', JSON.stringify(responses));
+    }
+    
+    function getLocalResponse(orderRef) {
+      const responses = JSON.parse(localStorage.getItem('orderResponses') || '{}');
+      return responses[orderRef] || { status: null, text: '' };
+    }
+    
+    function saveToLocal() {
+      alert("✅ تم حفظ التقرير محلياً بنجاح");
+    }
+    
+    function loadLocalData() {
+      // سيتم تحميل البيانات المحلية عند الحاجة
+    }
+    
+    // ---- STATISTICS ----
+    function updateStatistics() {
+      const rows = document.querySelectorAll('#reportBody tr');
+      let reviewed = 0;
+      let pending = 0;
+      
+      rows.forEach(row => {
+        const responseText = row.querySelector('.responseText').innerText;
+        if (responseText && responseText !== "لم يتم الرد بعد") {
+          reviewed++;
+        } else {
+          pending++;
+        }
+      });
+      
+      document.getElementById('totalOrders').textContent = rows.length;
+      document.getElementById('reviewedOrders').textContent = reviewed;
+      document.getElementById('pendingOrders').textContent = pending;
+    }
+    
+    // ---- SEND REPORT ----
     function sendReport() {
-      alert("📧 Report would be sent via EmailJS (configure service).");
+      const reviewedCount = document.getElementById('reviewedOrders').textContent;
+      const pendingCount = document.getElementById('pendingOrders').textContent;
+      
+      if (pendingCount > 0) {
+        if (!confirm(`لا يزال هناك ${pendingCount} طلب قيد المراجعة. هل تريد إرسال التقرير على أي حال؟`)) {
+          return;
+        }
+      }
+      
+      // هنا يمكنك إضافة كود إرسال التقرير عبر البريد الإلكتروني
+      alert(`📧 سيتم إرسال التقرير إلى المدير\nالطلبات المراجعة: ${reviewedCount}\nالطلبات المعلقة: ${pendingCount}`);
+      
+      // بعد الإرسال، يمكنك مسح البيانات المحلية إذا أردت
+      // localStorage.removeItem('orderResponses');
     }
   </script>
 </body>
