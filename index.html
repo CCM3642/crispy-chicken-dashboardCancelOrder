@@ -1,881 +1,1239 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة الطلبات الملغاة - CRISPY CHICKEN LU HGG[</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Dispute Adjustment Tracking System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* إعدادات عامة */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif;
-        }
-
         body {
-            background: #f5f7fa;
-            color: #333;
-            direction: rtl;
-            line-height: 1.6;
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        .dashboard-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
         }
-
-        /* الهيدر */
-        .header {
-            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .dashboard-card:hover {
+            transform: translateY(-5px);
         }
-
-        .header h1 {
-            font-size: 24px;
-        }
-
-        .header-stats {
-            display: flex;
-            gap: 15px;
-        }
-
-        .stat-card {
-            background: rgba(255,255,255,0.2);
-            padding: 10px 15px;
+        .nav-pills .nav-link {
             border-radius: 8px;
-            text-align: center;
+            margin: 5px;
         }
-
-        .stat-card span {
-            display: block;
-            font-size: 12px;
-            opacity: 0.9;
+        .nav-pills .nav-link.active {
+            background-color: #0d6efd;
         }
-
-        .stat-card strong {
-            display: block;
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        /* أقسام الصفحة */
         .section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: none;
         }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .section-header h2 {
-            font-size: 20px;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* النماذج */
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
+        .section.active {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #555;
         }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            direction: rtl;
+        .platform-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
         }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #ff6b35;
-            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        .careem {
+            background-color: #00a86b;
+            color: white;
         }
-
-        /* الأزرار */
-        .btn {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+        .noon {
+            background-color: #ff6b6b;
+            color: white;
+        }
+        .branch-btn {
+            border-radius: 8px;
+            margin: 5px;
             transition: all 0.3s;
         }
-
-        .btn-primary {
-            background: #ff6b35;
+        .branch-btn.active {
+            background-color: #0d6efd;
             color: white;
         }
-
-        .btn-primary:hover {
-            background: #e55a2b;
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
         }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
+        .status-open {
+            background-color: #ffeaa7;
+            color: #fdcb6e;
         }
-
-        .btn-secondary:hover {
-            background: #e0e0e0;
+        .status-progress {
+            background-color: #a29bfe;
+            color: #6c5ce7;
         }
-
-        .btn-success {
-            background: #2ecc71;
-            color: white;
+        .status-closed {
+            background-color: #55efc4;
+            color: #00b894;
         }
-
-        .btn-success:hover {
-            background: #27ae60;
+        .priority-high {
+            border-left: 4px solid #e17055;
         }
-
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
+        .priority-medium {
+            border-left: 4px solid #fdcb6e;
         }
-
-        .btn-danger:hover {
-            background: #c0392b;
+        .priority-low {
+            border-left: 4px solid #55efc4;
         }
-
-        /* لوحات التحكم */
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .dashboard-card {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            text-align: center;
-        }
-
-        .dashboard-card h3 {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .dashboard-card .value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #ff6b35;
-        }
-
-        /* الجداول */
-        .table-container {
-            overflow-x: auto;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        table {
+        .chart-container {
+            position: relative;
+            height: 300px;
             width: 100%;
-            border-collapse: collapse;
         }
-
-        th, td {
-            padding: 12px;
-            text-align: right;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        th {
-            background: #ff6b35;
-            color: white;
-            font-weight: 500;
-        }
-
-        tr:hover {
-            background: #f9f9f9;
-        }
-
-        /* الفلاتر */
-        .filters {
+        .platform-filter {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            min-width: 150px;
-        }
-
-        /* الحالات */
-        .status {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .status.cancelled {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status.delivered {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        /* الإشعارات */
-        .notifications {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .notification {
-            background: #2ecc71;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            animation: slideIn 0.3s;
-        }
-
-        .notification.error {
-            background: #e74c3c;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* التقارير */
-        .report-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
             margin-bottom: 20px;
         }
-
-        .report-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
+        .platform-filter button {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #dee2e6;
+            background-color: white;
+            transition: all 0.3s;
         }
-
-        .report-card h3 {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .report-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .report-stat {
-            text-align: center;
-        }
-
-        .report-stat .value {
-            font-size: 20px;
-            font-weight: 700;
-            color: #ff6b35;
-        }
-
-        .report-stat .label {
-            font-size: 12px;
-            color: #666;
-        }
-
-        /* الاستجابة للجوال */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .header-stats {
-                width: 100%;
-                justify-content: space-around;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .filters {
-                flex-direction: column;
-            }
+        .platform-filter button.active {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- الهيدر -->
-        <header class="header">
-            <div>
-                <h1>نظام إدارة الطلبات الملغاة - CRISPY CHICKEN LU HGG[</h1>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-shield-check"></i> Dispute Tracker
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('branches')">
+                            <i class="bi bi-building"></i> Branches
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('reports')">
+                            <i class="bi bi-file-earmark-text"></i> Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('new-entry')">
+                            <i class="bi bi-plus-circle"></i> New Entry
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('analysis')">
+                            <i class="bi bi-graph-up"></i> Analytics
+                        </a>
+                    </li>
+                </ul>
             </div>
-            <div class="header-stats">
-                <div class="stat-card">
-                    <span>إجمالي الطلبات</span>
-                    <strong id="totalOrders">0</strong>
-                </div>
-                <div class="stat-card">
-                    <span>الطلبات الملغاة</span>
-                    <strong id="cancelledOrders">0</strong>
-                </div>
-                <div class="stat-card">
-                    <span>الطلبات المكتملة</span>
-                    <strong id="deliveredOrders">0</strong>
-                </div>
-            </div>
-        </header>
+        </div>
+    </nav>
 
-        <!-- إضافة طلب جديد -->
-        <section class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-plus-circle"></i> إضافة طلب جديد</h2>
-            </div>
-            <form id="orderForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="brand">الماركة</label>
-                        <input type="text" id="brand" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="channel">القناة</label>
-                        <select id="channel" required>
-                            <option value="">اختر القناة</option>
-                            <option value="Careem">Careem</option>
-                            <option value="Zomato">Zomato</option>
-                            <option value="Talabat">Talabat</option>
-                            <option value="UberEats">UberEats</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="branch">الفرع</label>
-                        <input type="text" id="branch" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="status">الحالة</label>
-                        <select id="status" required>
-                            <option value="">اختر الحالة</option>
-                            <option value="cancelled">ملغى</option>
-                            <option value="delivered">مُسَلَّم</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="price">السعر (درهم)</label>
-                        <input type="number" id="price" step="0.01" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="orderCount">عدد الطلبات</label>
-                        <input type="number" id="orderCount" min="1" required>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> إضافة الطلب
+    <div class="container-fluid py-4">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section active">
+            <!-- Platform Filter -->
+            <div class="platform-filter">
+                <button class="active" onclick="filterByPlatform('all')">
+                    <i class="bi bi-grid-3x3-gap"></i> All Platforms
                 </button>
-            </form>
-        </section>
+                <button onclick="filterByPlatform('Careem')">
+                    <i class="bi bi-currency-exchange"></i> Careem
+                </button>
+                <button onclick="filterByPlatform('Noon')">
+                    <i class="bi bi-sun"></i> Noon
+                </button>
+            </div>
 
-        <!-- لوحات التحكم -->
-        <section class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-chart-bar"></i> لوحات التحكم</h2>
+            <!-- Dashboard Summary -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card dashboard-card bg-white">
+                        <div class="card-body text-center">
+                            <i class="bi bi-list-check text-primary" style="font-size: 2.5rem;"></i>
+                            <h3 class="mt-3" id="totalCases">200</h3>
+                            <p class="text-muted">Total Cases</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card dashboard-card bg-white">
+                        <div class="card-body text-center">
+                            <i class="bi bi-clock-history text-warning" style="font-size: 2.5rem;"></i>
+                            <h3 class="mt-3" id="openCases">142</h3>
+                            <p class="text-muted">Open Cases</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card dashboard-card bg-white">
+                        <div class="card-body text-center">
+                            <i class="bi bi-gear text-info" style="font-size: 2.5rem;"></i>
+                            <h3 class="mt-3" id="progressCases">0</h3>
+                            <p class="text-muted">In Progress</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card dashboard-card bg-white">
+                        <div class="card-body text-center">
+                            <i class="bi bi-check-circle text-success" style="font-size: 2.5rem;"></i>
+                            <h3 class="mt-3" id="closedCases">58</h3>
+                            <p class="text-muted">Closed Cases</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="dashboard">
-                <div class="dashboard-card">
-                    <h3>إجمالي الخسائر</h3>
-                    <div class="value" id="totalLoss">0.00 درهم</div>
-                </div>
-                <div class="dashboard-card">
-                    <h3>نسبة الإلغاء</h3>
-                    <div class="value" id="cancellationRate">0%</div>
-                </div>
-                <div class="dashboard-card">
-                    <h3>إجمالي الإيرادات</h3>
-                    <div class="value" id="totalRevenue">0.00 درهم</div>
-                </div>
-                <div class="dashboard-card">
-                    <h3>أكثر قناة إلغاءً</h3>
-                    <div class="value" id="topCancellationChannel">-</div>
-                </div>
-            </div>
-        </section>
 
-        <!-- الفلاتر والبحث -->
-        <section class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-filter"></i> الفلاتر والبحث</h2>
-            </div>
-            <div class="filters">
-                <div class="filter-group">
-                    <label for="filterChannel">فلترة حسب القناة</label>
-                    <select id="filterChannel" onchange="renderTable()">
-                        <option value="">الكل</option>
-                        <option value="Careem">Careem</option>
-                        <option value="Zomato">Zomato</option>
-                        <option value="Talabat">Talabat</option>
-                        <option value="UberEats">UberEats</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="filterBranch">فلترة حسب الفرع</label>
-                    <input type="text" id="filterBranch" onkeyup="renderTable()" placeholder="ابحث بالفرع...">
-                </div>
-                <div class="filter-group">
-                    <label for="filterStatus">فلترة حسب الحالة</label>
-                    <select id="filterStatus" onchange="renderTable()">
-                        <option value="">الكل</option>
-                        <option value="cancelled">ملغى</option>
-                        <option value="delivered">مُسَلَّم</option>
-                    </select>
+            <!-- Branch Filter -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h4 class="mb-3">Filter by Branch</h4>
+                    <div class="btn-group flex-wrap" id="branchFilter">
+                        <button class="btn btn-outline-primary branch-btn active" data-branch="all">All Branches</button>
+                        <button class="btn btn-outline-primary branch-btn" data-branch="Al Barsha 1">Al Barsha 1</button>
+                        <button class="btn btn-outline-primary branch-btn" data-branch="Alkhadia">Alkhadia</button>
+                        <button class="btn btn-outline-primary branch-btn" data-branch="Al Danah">Al Danah</button>
+                        <button class="btn btn-outline-primary branch-btn" data-branch="Al Markaziyah">Al Markaziyah</button>
+                        <button class="btn btn-outline-primary branch-btn" data-branch="Al Rawdah">Al Rawdah</button>
+                        <button class="btn btn-outline-primary branch-btn" data-branch="Al Satwa">Al Satwa</button>
+                        <button class="btn btn-outline-primary branch-btn" data-branch="Mohammed Bin Zayed City">Mohammed Bin Zayed City</button>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <!-- جدول الطلبات -->
-        <section class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-table"></i> جدول الطلبات</h2>
-                <div>
-                    <button class="btn btn-secondary" onclick="exportToCSV()">
-                        <i class="fas fa-file-csv"></i> تصدير CSV
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportToPDF()">
-                        <i class="fas fa-file-pdf"></i> تصدير PDF
-                    </button>
-                    <button class="btn btn-secondary" onclick="window.print()">
-                        <i class="fas fa-print"></i> طباعة
-                    </button>
+            <!-- Cases Table -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card bg-white rounded-3 shadow-sm">
+                        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">Open Cases</h4>
+                            <div>
+                                <span class="platform-badge careem">Careem: <span id="careemCount">200</span></span>
+                                <span class="platform-badge noon">Noon: <span id="noonCount">0</span></span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Ref ID</th>
+                                            <th>Platform</th>
+                                            <th>Branch</th>
+                                            <th>Date</th>
+                                            <th>Amount</th>
+                                            <th>Description</th>
+                                            <th>Status</th>
+                                            <th>Priority</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="casesTable">
+                                        <!-- Cases will be dynamically inserted here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="table-container">
-                <table id="ordersTable">
-                    <thead>
-                        <tr>
-                            <th>الماركة</th>
-                            <th>القناة</th>
-                            <th>الفرع</th>
-                            <th>الحالة</th>
-                            <th>السعر</th>
-                            <th>عدد الطلبات</th>
-                            <th>المجموع</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </section>
 
-        <!-- التقارير -->
-        <section class="report-section">
-            <div class="section-header">
-                <h2><i class="fas fa-chart-line"></i> التقارير</h2>
-                <div>
-                    <button class="btn btn-success" onclick="sendReport('email')">
-                        <i class="fas fa-envelope"></i> إرسال عبر الإيميل
-                    </button>
-                    <button class="btn btn-success" onclick="sendReport('whatsapp')">
-                        <i class="fab fa-whatsapp"></i> إرسال عبر واتساب
-                    </button>
+            <!-- Activity Log -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-white rounded-3 shadow-sm">
+                        <div class="card-header bg-light py-3">
+                            <h4 class="mb-0">Activity Log</h4>
+                        </div>
+                        <div class="card-body activity-log" id="activityLog">
+                            <!-- Activities will be dynamically inserted here -->
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div id="reportsContainer">
-                <!-- سيتم ملء التقارير هنا ديناميكيًا -->
+        </div>
+
+        <!-- Branch Management Section -->
+        <div id="branches" class="section">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-white rounded-3 shadow-sm">
+                        <div class="card-header bg-light py-3">
+                            <h4 class="mb-0">Branch Management</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <button class="btn btn-primary" onclick="showAddBranchForm()">
+                                    <i class="bi bi-plus-circle"></i> Add New Branch
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Branch Name</th>
+                                            <th>Platform</th>
+                                            <th>Total Cases</th>
+                                            <th>Open Cases</th>
+                                            <th>Closed Rate</th>
+                                            <th>Total Deduction</th>
+                                            <th>Total Reversal</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="branchesTable">
+                                        <!-- Branches will be dynamically inserted here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </section>
+        </div>
+
+        <!-- Reports Section -->
+        <div id="reports" class="section">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card bg-white rounded-3 shadow-sm">
+                        <div class="card-header bg-light py-3">
+                            <h5 class="mb-0">Weekly Report</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="weeklyPlatform" class="form-label">Platform</label>
+                                <select class="form-select" id="weeklyPlatform">
+                                    <option value="all">All Platforms</option>
+                                    <option value="Careem">Careem</option>
+                                    <option value="Noon">Noon</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="weeklyBranch" class="form-label">Branch</label>
+                                <select class="form-select" id="weeklyBranch">
+                                    <option value="all">All Branches</option>
+                                    <option value="Al Barsha 1">Al Barsha 1</option>
+                                    <option value="Alkhadia">Alkhadia</option>
+                                    <option value="Al Danah">Al Danah</option>
+                                    <option value="Al Markaziyah">Al Markaziyah</option>
+                                    <option value="Al Rawdah">Al Rawdah</option>
+                                    <option value="Al Satwa">Al Satwa</option>
+                                    <option value="Mohammed Bin Zayed City">Mohammed Bin Zayed City</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="generateWeeklyReport()">Generate Report</button>
+                            <div id="weeklyReport" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-white rounded-3 shadow-sm">
+                        <div class="card-header bg-light py-3">
+                            <h5 class="mb-0">Monthly Report</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="monthlyPlatform" class="form-label">Platform</label>
+                                <select class="form-select" id="monthlyPlatform">
+                                    <option value="all">All Platforms</option>
+                                    <option value="Careem">Careem</option>
+                                    <option value="Noon">Noon</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="monthlyBranch" class="form-label">Branch</label>
+                                <select class="form-select" id="monthlyBranch">
+                                    <option value="all">All Branches</option>
+                                    <option value="Al Barsha 1">Al Barsha 1</option>
+                                    <option value="Alkhadia">Alkhadia</option>
+                                    <option value="Al Danah">Al Danah</option>
+                                    <option value="Al Markaziyah">Al Markaziyah</option>
+                                    <option value="Al Rawdah">Al Rawdah</option>
+                                    <option value="Al Satwa">Al Satwa</option>
+                                    <option value="Mohammed Bin Zayed City">Mohammed Bin Zayed City</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="generateMonthlyReport()">Generate Report</button>
+                            <div id="monthlyReport" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-white rounded-3 shadow-sm">
+                        <div class="card-header bg-light py-3">
+                            <h5 class="mb-0">Financial Overview</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="financialChart" class="chart-container"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Data Entry Section -->
+        <div id="new-entry" class="section">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-white rounded-3 shadow-sm">
+                        <div class="card-header bg-light py-3">
+                            <h4 class="mb-0">Add New Case</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="newCaseForm">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="newRefId" class="form-label">Reference ID</label>
+                                        <input type="text" class="form-control" id="newRefId" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="newBillId" class="form-label">Billable ID</label>
+                                        <input type="text" class="form-control" id="newBillId" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="newPlatform" class="form-label">Platform</label>
+                                        <select class="form-select" id="newPlatform" required>
+                                            <option value="">Select Platform</option>
+                                            <option value="Careem">Careem</option>
+                                            <option value="Noon">Noon</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="newBranch" class="form-label">Branch</label>
+                                        <select class="form-select" id="newBranch" required>
+                                            <option value="">Select Branch</option>
+                                            <option value="Al Barsha 1">Al Barsha 1</option>
+                                            <option value="Alkhadia">Alkhadia</option>
+                                            <option value="Al Danah">Al Danah</option>
+                                            <option value="Al Markaziyah">Al Markaziyah</option>
+                                            <option value="Al Rawdah">Al Rawdah</option>
+                                            <option value="Al Satwa">Al Satwa</option>
+                                            <option value="Mohammed Bin Zayed City">Mohammed Bin Zayed City</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="newDate" class="form-label">Date</label>
+                                        <input type="date" class="form-control" id="newDate" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="newAmount" class="form-label">Amount</label>
+                                        <input type="number" step="0.01" class="form-control" id="newAmount" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="newPriority" class="form-label">Priority</label>
+                                        <select class="form-select" id="newPriority" required>
+                                            <option value="">Select Priority</option>
+                                            <option value="High">High</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="Low">Low</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="newDescription" rows="3" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add Case</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Section -->
+        <div id="analysis" class="section">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card bg-white rounded-3 shadow-sm">
+                        <div class="card-header bg-light py-3">
+                            <h5 class="mb-0">Cases Distribution by Branch</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="branchChart" class="chart-container"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-white rounded-3 shadow-sm">
+                        <div class="card-header bg-light py-3">
+                            <h5 class="mb-0">Dispute Types</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="disputeChart" class="chart-container"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card bg-white rounded-3 shadow-sm">
+                        <div class="card-header bg-light py-3">
+                            <h5 class="mb-0">Branch Performance</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="branchPerformance" class="row">
+                                <!-- Branch performance cards will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- الإشعارات -->
-    <div class="notifications" id="notifications"></div>
+    <!-- Status Update Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Case Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">New Status</label>
+                        <select class="form-select" id="newStatus">
+                            <option value="Open">Open</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Resolution Notes</label>
+                        <textarea class="form-control" id="statusNotes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="updateStatusBtn">Update Status</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- مكتبة PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // إدارة البيانات
-        let orders = JSON.parse(localStorage.getItem('orders')) || [];
+        // Sample data with 200 Careem cases
+        const casesData = [
+            {id: 1, reference: "128529236", billable_id: "1050334", platform: "Careem", date: "2025-09-07", amount: -19, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "Medium", branch: "Al Barsha 1"},
+            {id: 2, reference: "128270927", billable_id: "1050334", platform: "Careem", date: "2025-09-05", amount: -21, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "Medium", branch: "Al Barsha 1"},
+            {id: 3, reference: "128161258", billable_id: "1050334", platform: "Careem", date: "2025-09-04", amount: -9, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "Low", branch: "Al Barsha 1"},
+            {id: 4, reference: "127892860", billable_id: "1050334", platform: "Careem", date: "2025-09-02", amount: -39, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "High", branch: "Al Barsha 1"},
+            {id: 5, reference: "128504073", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -28, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Barsha 1"},
+            {id: 6, reference: "128485146", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -5, description: "Food__Customer__Quality Issues__Missing or unavailable items (Side item)", status: "Open", priority: "Low", branch: "Al Barsha 1"},
+            {id: 7, reference: "127641051", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: 5, description: "Clawback Reversals for Order 127641051", status: "Closed", priority: "Low", branch: "Al Barsha 1"},
+            {id: 8, reference: "127616727", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: 20, description: "Clawback Reversals for Order 127616727", status: "Closed", priority: "Low", branch: "Al Barsha 1"},
+            {id: 9, reference: "127548066", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: 20, description: "Clawback Reversals for Order 127548066", status: "Closed", priority: "Low", branch: "Al Barsha 1"},
+            {id: 10, reference: "127548103", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: 16, description: "Clawback Reversals for Order 127548103", status: "Closed", priority: "Low", branch: "Al Barsha 1"},
+            {id: 11, reference: "127532965", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: 52, description: "Clawback Reversals for Order 127532965", status: "Closed", priority: "Low", branch: "Al Barsha 1"},
+            {id: 12, reference: "127515454", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: 16, description: "Clawback Reversals for Order 127515454", status: "Closed", priority: "Low", branch: "Al Barsha 1"},
+            {id: 13, reference: "127411187", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: 19, description: "Clawback Reversals for Order 127411187", status: "Closed", priority: "Low", branch: "Al Barsha 1"},
+            {id: 14, reference: "127282222", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: 16, description: "Clawback Reversals for Order 127282222", status: "Closed", priority: "Low", branch: "Al Barsha 1"},
+            {id: 15, reference: "127616727", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: 10, description: "Penalties for Order 127616727", status: "Closed", priority: "Low", branch: "Al Barsha 1"},
+            {id: 16, reference: "125158189", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -26, description: "Claw back for Order 125158189 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Barsha 1"},
+            {id: 17, reference: "124849549", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -42, description: "Claw back for Order 124849549 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Barsha 1"},
+            {id: 18, reference: "126034891", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -16, description: "Claw back for Order 126034891 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Barsha 1"},
+            {id: 19, reference: "128392817", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -28, description: "Food__Customer__Quality Issues__Wrong item sent", status: "Open", priority: "High", branch: "Al Barsha 1"},
+            {id: 20, reference: "128390672", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -41, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Barsha 1"},
+            {id: 21, reference: "128362515", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -47, description: "Food__Customer__Quality Issues__Foul Smell", status: "Open", priority: "High", branch: "Al Barsha 1"},
+            {id: 22, reference: "128154965", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -29, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Barsha 1"},
+            {id: 23, reference: "128124887", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -21, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Barsha 1"},
+            {id: 24, reference: "127822223", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -22, description: "Food__Customer__Quality Issues__My Food is not edible (SelfServe)", status: "Open", priority: "Medium", branch: "Al Barsha 1"},
+            {id: 25, reference: "127781139", billable_id: "1050334", platform: "Careem", date: "2025-09-01", amount: -40, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Barsha 1"},
+            {id: 26, reference: "128650270", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -28, description: "Food__Customer__Quality Issues__Foul Smell", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 27, reference: "128548011", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -36, description: "Food__Customer__Quality Issues__My Food is not edible (SelfServe)", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 28, reference: "128545391", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -22, description: "Food__Customer__Quality Issues__Wrong item sent", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 29, reference: "128660559", billable_id: "1066777", platform: "Careem", date: "2025-09-08", amount: -18, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "Medium", branch: "Al Danah"},
+            {id: 30, reference: "128645532", billable_id: "1066777", platform: "Careem", date: "2025-09-08", amount: -22, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "Medium", branch: "Al Danah"},
+            {id: 31, reference: "127627762", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: 20, description: "Clawback Reversals for Order 127627762", status: "Closed", priority: "Low", branch: "Al Danah"},
+            {id: 32, reference: "127646151", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: 20, description: "Clawback Reversals for Order 127646151", status: "Closed", priority: "Low", branch: "Al Danah"},
+            {id: 33, reference: "127640145", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: 20, description: "Clawback Reversals for Order 127640145", status: "Closed", priority: "Low", branch: "Al Danah"},
+            {id: 34, reference: "127550563", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: 20, description: "Clawback Reversals for Order 127550563", status: "Closed", priority: "Low", branch: "Al Danah"},
+            {id: 35, reference: "127407564", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: 18, description: "Clawback Reversals for Order 127407564", status: "Closed", priority: "Low", branch: "Al Danah"},
+            {id: 36, reference: "127288547", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: 19, description: "Clawback Reversals for Order 127288547", status: "Closed", priority: "Low", branch: "Al Danah"},
+            {id: 37, reference: "127646151", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: 10, description: "Penalties for Order 127646151", status: "Closed", priority: "Low", branch: "Al Danah"},
+            {id: 38, reference: "127640145", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: 10, description: "Penalties for Order 127640145", status: "Closed", priority: "Low", branch: "Al Danah"},
+            {id: 39, reference: "127062970", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -22, description: "Claw back for Order 127062970 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Danah"},
+            {id: 40, reference: "127085406", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -30, description: "Claw back for Order 127085406 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Danah"},
+            {id: 41, reference: "125594808", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -23, description: "Claw back for Order 125594808 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Danah"},
+            {id: 42, reference: "125944217", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -25, description: "Claw back for Order 125944217 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Danah"},
+            {id: 43, reference: "125159434", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -17, description: "Claw back for Order 125159434 Partner Did not Prepare", status: "Closed", priority: "Low", branch: "Al Danah"},
+            {id: 44, reference: "124486384", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -17, description: "Claw back for Order 124486384 Partner Did not Prepare", status: "Closed", priority: "Low", branch: "Al Danah"},
+            {id: 45, reference: "124274335", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -33, description: "Claw back for Order 124274335 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Danah"},
+            {id: 46, reference: "126610778", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -30, description: "Claw back for Order 126610778 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Danah"},
+            {id: 47, reference: "124757966", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -65, description: "Claw back for Order 124757966 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Danah"},
+            {id: 48, reference: "125630423", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -22, description: "Claw back for Order 125630423 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Danah"},
+            {id: 49, reference: "125158961", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -30, description: "Claw back for Order 125158961 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Danah"},
+            {id: 50, reference: "126533872", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -44, description: "Claw back for Order 126533872 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Danah"},
+            {id: 51, reference: "125013090", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -22, description: "Claw back for Order 125013090 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Danah"},
+            {id: 52, reference: "124705096", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -30, description: "Claw back for Order 124705096 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Danah"},
+            {id: 53, reference: "128418994", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -9, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "Medium", branch: "Al Danah"},
+            {id: 54, reference: "128223074", billable_id: "1066777", platform: "Careem", date: "2025-09-05", amount: -28, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 55, reference: "128089406", billable_id: "1066777", platform: "Careem", date: "2025-09-04", amount: -24, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 56, reference: "127914014", billable_id: "1066777", platform: "Careem", date: "2025-09-02", amount: -21, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "Medium", branch: "Al Danah"},
+            {id: 57, reference: "128292354", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -21, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 58, reference: "128206037", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -20, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 59, reference: "128161874", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -5, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "Low", branch: "Al Danah"},
+            {id: 60, reference: "128107019", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -21, description: "Food__Customer__Quality Issues__Wrong item sent", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 61, reference: "128054216", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -17, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 62, reference: "128052003", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -11, description: "Food__Customer__Quality Issues__Wrong item sent", status: "Open", priority: "Medium", branch: "Al Danah"},
+            {id: 63, reference: "127980889", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -25, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 64, reference: "127850903", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -29, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 65, reference: "127841536", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -6, description: "Food__Customer__Quality Issues__Missing or unavailable items (Side item)", status: "Open", priority: "Low", branch: "Al Danah"},
+            {id: 66, reference: "127796404", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -20, description: "Food__Customer__Quality Issues__Food is overcooked/burnt", status: "Open", priority: "Medium", branch: "Al Danah"},
+            {id: 67, reference: "127790873", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -35, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 68, reference: "127791176", billable_id: "1066777", platform: "Careem", date: "2025-09-01", amount: -35, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Danah"},
+            {id: 69, reference: "128545245", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -34, description: "Food__Customer__Quality Issues__My Food is not edible (SelfServe)", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 70, reference: "127545426", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: 17, description: "Clawback Reversals for Order 127545426", status: "Closed", priority: "Low", branch: "Al Markaziyah"},
+            {id: 71, reference: "127412129", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: 5, description: "Clawback Reversals for Order 127412129", status: "Closed", priority: "Low", branch: "Al Markaziyah"},
+            {id: 72, reference: "127391830", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: 19, description: "Clawback Reversals for Order 127391830", status: "Closed", priority: "Low", branch: "Al Markaziyah"},
+            {id: 73, reference: "127394538", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: 16, description: "Clawback Reversals for Order 127394538", status: "Closed", priority: "Low", branch: "Al Markaziyah"},
+            {id: 74, reference: "127361859", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: 9, description: "Clawback Reversals for Order 127361859", status: "Closed", priority: "Low", branch: "Al Markaziyah"},
+            {id: 75, reference: "127358238", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -37, description: "Claw back for Order 127358238 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Markaziyah"},
+            {id: 76, reference: "126615020", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -64, description: "Claw back for Order 126615020 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Markaziyah"},
+            {id: 77, reference: "125713174", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -20, description: "Claw back for Order 125713174 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Markaziyah"},
+            {id: 78, reference: "124454673", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -21, description: "Claw back for Order 124454673 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Markaziyah"},
+            {id: 79, reference: "126983299", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -42, description: "Claw back for Order 126983299 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Markaziyah"},
+            {id: 80, reference: "125154186", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -41, description: "Claw back for Order 125154186 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Markaziyah"},
+            {id: 81, reference: "126830492", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -32, description: "Claw back for Order 126830492 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Markaziyah"},
+            {id: 82, reference: "128411210", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -31, description: "Food__Customer__Quality Issues__Food is undercooked", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 83, reference: "128356709", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -22, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 84, reference: "128412423", billable_id: "1057120", platform: "Careem", date: "2025-09-06", amount: -19, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "Medium", branch: "Al Markaziyah"},
+            {id: 85, reference: "128404948", billable_id: "1057120", platform: "Careem", date: "2025-09-06", amount: -32, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 86, reference: "127891558", billable_id: "1057120", platform: "Careem", date: "2025-09-02", amount: -27, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 87, reference: "128109385", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -26, description: "Food__Customer__Quality Issues__Food is undercooked", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 88, reference: "128084695", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -22, description: "Food__Customer__Quality Issues__My Food is not edible (SelfServe)", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 89, reference: "128079384", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -20, description: "Food__Customer__Quality Issues__Wrong item sent", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 90, reference: "128032602", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -25, description: "Food__Customer__Quality Issues__My Food is not edible (SelfServe)", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 91, reference: "128021708", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -5, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "Low", branch: "Al Markaziyah"},
+            {id: 92, reference: "127893292", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -13, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "Medium", branch: "Al Markaziyah"},
+            {id: 93, reference: "127585858", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 19, description: "Clawback Reversals for Order 127585858", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 94, reference: "127532321", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 18, description: "Clawback Reversals for Order 127532321", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 95, reference: "127595307", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 30, description: "Clawback Reversals for Order 127595307", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 96, reference: "127530859", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 15, description: "Clawback Reversals for Order 127530859", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 97, reference: "127595307", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 10, description: "Penalties for Order 127595307", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 98, reference: "127530859", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 10, description: "Penalties for Order 127530859", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 99, reference: "124759169", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: -32, description: "Claw back for Order 124759169 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Rawdah"},
+            {id: 100, reference: "124758936", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: -32, description: "Claw back for Order 124758936 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Rawdah"},
+            {id: 101, reference: "128490474", billable_id: "1057122", platform: "Careem", date: "2025-09-07", amount: -19, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "Medium", branch: "Al Rawdah"},
+            {id: 102, reference: "128062407", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: -24, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Rawdah"},
+            {id: 103, reference: "127742592", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: -4, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "Low", branch: "Al Rawdah"},
+            {id: 104, reference: "128529913", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: -19, description: "Food__Customer__Quality Issues__Food is undercooked", status: "Open", priority: "Medium", branch: "Al Satwa"},
+            {id: 105, reference: "128457104", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: -28, description: "Food__Customer__Quality Issues__Hair in the food", status: "Open", priority: "High", branch: "Al Satwa"},
+            {id: 106, reference: "127524871", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: 5, description: "Clawback Reversals for Order 127524871", status: "Closed", priority: "Low", branch: "Al Satwa"},
+            {id: 107, reference: "127466629", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: 23, description: "Clawback Reversals for Order 127466629", status: "Closed", priority: "Low", branch: "Al Satwa"},
+            {id: 108, reference: "127418470", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: 18, description: "Clawback Reversals for Order 127418470", status: "Closed", priority: "Low", branch: "Al Satwa"},
+            {id: 109, reference: "127363503", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: 5, description: "Clawback Reversals for Order 127363503", status: "Closed", priority: "Low", branch: "Al Satwa"},
+            {id: 110, reference: "127363503", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: 10, description: "Penalties for Order 127363503", status: "Closed", priority: "Low", branch: "Al Satwa"},
+            {id: 111, reference: "126624489", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: -24, description: "Claw back for Order 126624489 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Satwa"},
+            {id: 112, reference: "126402942", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: -24, description: "Claw back for Order 126402942 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Satwa"},
+            {id: 113, reference: "126306224", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: -45, description: "Claw back for Order 126306224 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Satwa"},
+            {id: 114, reference: "127903886", billable_id: "1061662", platform: "Careem", date: "2025-09-02", amount: -25, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "High", branch: "Al Satwa"},
+            {id: 115, reference: "127877033", billable_id: "1061662", platform: "Careem", date: "2025-09-02", amount: -28, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "High", branch: "Al Satwa"},
+            {id: 116, reference: "127736866", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: -2, description: "Food__Customer__Quality Issues__Missing or unavailable items (Side item)", status: "Open", priority: "Low", branch: "Al Satwa"},
+            {id: 117, reference: "128663422", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -18, description: "Food__Customer__Quality Issues__Food is undercooked", status: "Open", priority: "Medium", branch: "Alkhadia"},
+            {id: 118, reference: "128566310", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -34, description: "Food__Customer__Quality Issues__Wrong item sent", status: "Open", priority: "High", branch: "Alkhadia"},
+            {id: 119, reference: "127647898", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: 2, description: "Clawback Reversals for Order 127647898", status: "Closed", priority: "Low", branch: "Alkhadia"},
+            {id: 120, reference: "127548427", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: 20, description: "Clawback Reversals for Order 127548427", status: "Closed", priority: "Low", branch: "Alkhadia"},
+            {id: 121, reference: "127490479", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: 5, description: "Clawback Reversals for Order 127490479", status: "Closed", priority: "Low", branch: "Alkhadia"},
+            {id: 122, reference: "127393569", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: 20, description: "Clawback Reversals for Order 127393569", status: "Closed", priority: "Low", branch: "Alkhadia"},
+            {id: 123, reference: "127361962", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: 15, description: "Clawback Reversals for Order 127361962", status: "Closed", priority: "Low", branch: "Alkhadia"},
+            {id: 124, reference: "127647898", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: 10, description: "Penalties for Order 127647898", status: "Closed", priority: "Low", branch: "Alkhadia"},
+            {id: 125, reference: "125463605", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -20, description: "Claw back for Order 125463605 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Alkhadia"},
+            {id: 126, reference: "127569906", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -24, description: "Claw back for Order 127569906 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Alkhadia"},
+            {id: 127, reference: "124512665", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -24, description: "Claw back for Order 124512665 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Alkhadia"},
+            {id: 128, reference: "127153234", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -32, description: "Claw back for Order 127153234 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Alkhadia"},
+            {id: 129, reference: "128415185", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -18, description: "Food__Customer__Quality Issues__My Food is not edible (SelfServe)", status: "Open", priority: "Medium", branch: "Alkhadia"},
+            {id: 130, reference: "128360648", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -28, description: "Food__Customer__Quality Issues__Wrong item sent", status: "Open", priority: "High", branch: "Alkhadia"},
+            {id: 131, reference: "128358619", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -11, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "Medium", branch: "Alkhadia"},
+            {id: 132, reference: "128346941", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -22, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Alkhadia"},
+            {id: 133, reference: "128346505", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -20, description: "Food__Customer__Quality Issues__Food is undercooked", status: "Open", priority: "High", branch: "Alkhadia"},
+            {id: 134, reference: "128252826", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -40, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Alkhadia"},
+            {id: 135, reference: "128034014", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -21, description: "Food__Customer__Quality Issues__Instructions not followed", status: "Open", priority: "Medium", branch: "Alkhadia"},
+            {id: 136, reference: "128018813", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -6, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "Low", branch: "Alkhadia"},
+            {id: 137, reference: "128349023", billable_id: "1057118", platform: "Careem", date: "2025-09-06", amount: -24, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "High", branch: "Alkhadia"},
+            {id: 138, reference: "127767428", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -5, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "Low", branch: "Alkhadia"},
+            {id: 139, reference: "127822175", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -13, description: "Food__Customer__Quality Issues__Wrong item sent", status: "Open", priority: "Medium", branch: "Alkhadia"},
+            {id: 140, reference: "127794202", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -11, description: "Food__Customer__Quality Issues__My Food is not edible (SelfServe)", status: "Open", priority: "Medium", branch: "Alkhadia"},
+            {id: 141, reference: "128524139", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: -5, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "Low", branch: "Mohammed Bin Zayed City"},
+            {id: 142, reference: "127642626", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: 19, description: "Clawback Reversals for Order 127642626", status: "Closed", priority: "Low", branch: "Mohammed Bin Zayed City"},
+            {id: 143, reference: "127411504", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: 25, description: "Clawback Reversals for Order 127411504", status: "Closed", priority: "Low", branch: "Mohammed Bin Zayed City"},
+            {id: 144, reference: "127307596", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: 10, description: "Clawback Reversals for Order 127307596", status: "Closed", priority: "Low", branch: "Mohammed Bin Zayed City"},
+            {id: 145, reference: "127642626", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: 10, description: "Penalties for Order 127642626", status: "Closed", priority: "Low", branch: "Mohammed Bin Zayed City"},
+            {id: 146, reference: "125676861", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: -25, description: "Claw back for Order 125676861 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Mohammed Bin Zayed City"},
+            {id: 147, reference: "125627481", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: -83, description: "Claw back for Order 125627481 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Mohammed Bin Zayed City"},
+            {id: 148, reference: "125112806", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: -25, description: "Claw back for Order 125112806 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Mohammed Bin Zayed City"},
+            {id: 149, reference: "124955318", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: -201, description: "Claw back for Order 124955318 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Mohammed Bin Zayed City"},
+            {id: 150, reference: "126436771", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: -32, description: "Claw back for Order 126436771 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Mohammed Bin Zayed City"},
+            {id: 151, reference: "128286095", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: -60, description: "Food__Customer__Quality Issues__Hair in the food", status: "Open", priority: "High", branch: "Mohammed Bin Zayed City"},
+            {id: 152, reference: "128284323", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: -28, description: "Food__Customer__Quality Issues__Wrong item sent", status: "Open", priority: "High", branch: "Mohammed Bin Zayed City"},
+            {id: 153, reference: "128284323", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: -10, description: "Penalty for clawback complaint reason Wrong item sent", status: "Open", priority: "Medium", branch: "Mohammed Bin Zayed City"},
+            {id: 154, reference: "128524139", billable_id: "1057123", platform: "Careem", date: "2025-09-01", amount: -10, description: "Penalty for clawback complaint reason Missing or unavailable items (Main item)", status: "Open", priority: "Medium", branch: "Mohammed Bin Zayed City"},
+            {id: 155, reference: "128545245", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -34, description: "Food__Customer__Quality Issues__My Food is not edible (SelfServe)", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 156, reference: "127545426", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: 17, description: "Clawback Reversals for Order 127545426", status: "Closed", priority: "Low", branch: "Al Markaziyah"},
+            {id: 157, reference: "127412129", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: 5, description: "Clawback Reversals for Order 127412129", status: "Closed", priority: "Low", branch: "Al Markaziyah"},
+            {id: 158, reference: "127391830", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: 19, description: "Clawback Reversals for Order 127391830", status: "Closed", priority: "Low", branch: "Al Markaziyah"},
+            {id: 159, reference: "127394538", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: 16, description: "Clawback Reversals for Order 127394538", status: "Closed", priority: "Low", branch: "Al Markaziyah"},
+            {id: 160, reference: "127361859", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: 9, description: "Clawback Reversals for Order 127361859", status: "Closed", priority: "Low", branch: "Al Markaziyah"},
+            {id: 161, reference: "127358238", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -37, description: "Claw back for Order 127358238 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Markaziyah"},
+            {id: 162, reference: "126615020", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -64, description: "Claw back for Order 126615020 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Markaziyah"},
+            {id: 163, reference: "125713174", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -20, description: "Claw back for Order 125713174 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Markaziyah"},
+            {id: 164, reference: "124454673", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -21, description: "Claw back for Order 124454673 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Markaziyah"},
+            {id: 165, reference: "126983299", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -42, description: "Claw back for Order 126983299 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Markaziyah"},
+            {id: 166, reference: "125154186", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -41, description: "Claw back for Order 125154186 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Markaziyah"},
+            {id: 167, reference: "126830492", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -32, description: "Claw back for Order 126830492 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Markaziyah"},
+            {id: 168, reference: "128411210", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -31, description: "Food__Customer__Quality Issues__Food is undercooked", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 169, reference: "128356709", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -22, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 170, reference: "128412423", billable_id: "1057120", platform: "Careem", date: "2025-09-06", amount: -19, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "Medium", branch: "Al Markaziyah"},
+            {id: 171, reference: "128404948", billable_id: "1057120", platform: "Careem", date: "2025-09-06", amount: -32, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 172, reference: "127891558", billable_id: "1057120", platform: "Careem", date: "2025-09-02", amount: -27, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 173, reference: "128109385", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -26, description: "Food__Customer__Quality Issues__Food is undercooked", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 174, reference: "128084695", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -22, description: "Food__Customer__Quality Issues__My Food is not edible (SelfServe)", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 175, reference: "128079384", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -20, description: "Food__Customer__Quality Issues__Wrong item sent", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 176, reference: "128032602", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -25, description: "Food__Customer__Quality Issues__My Food is not edible (SelfServe)", status: "Open", priority: "High", branch: "Al Markaziyah"},
+            {id: 177, reference: "128021708", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -5, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "Low", branch: "Al Markaziyah"},
+            {id: 178, reference: "127893292", billable_id: "1057120", platform: "Careem", date: "2025-09-01", amount: -13, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "Medium", branch: "Al Markaziyah"},
+            {id: 179, reference: "127585858", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 19, description: "Clawback Reversals for Order 127585858", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 180, reference: "127532321", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 18, description: "Clawback Reversals for Order 127532321", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 181, reference: "127595307", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 30, description: "Clawback Reversals for Order 127595307", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 182, reference: "127530859", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 15, description: "Clawback Reversals for Order 127530859", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 183, reference: "127595307", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 10, description: "Penalties for Order 127595307", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 184, reference: "127530859", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: 10, description: "Penalties for Order 127530859", status: "Closed", priority: "Low", branch: "Al Rawdah"},
+            {id: 185, reference: "124759169", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: -32, description: "Claw back for Order 124759169 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Rawdah"},
+            {id: 186, reference: "124758936", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: -32, description: "Claw back for Order 124758936 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Rawdah"},
+            {id: 187, reference: "128490474", billable_id: "1057122", platform: "Careem", date: "2025-09-07", amount: -19, description: "Food__Customer__Quality Issues__Spilled / damaged", status: "Open", priority: "Medium", branch: "Al Rawdah"},
+            {id: 188, reference: "128062407", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: -24, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "High", branch: "Al Rawdah"},
+            {id: 189, reference: "127742592", billable_id: "1057122", platform: "Careem", date: "2025-09-01", amount: -4, description: "Food__Customer__Quality Issues__Missing or unavailable items (Main item)", status: "Open", priority: "Low", branch: "Al Rawdah"},
+            {id: 190, reference: "128529913", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: -19, description: "Food__Customer__Quality Issues__Food is undercooked", status: "Open", priority: "Medium", branch: "Al Satwa"},
+            {id: 191, reference: "128457104", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: -28, description: "Food__Customer__Quality Issues__Hair in the food", status: "Open", priority: "High", branch: "Al Satwa"},
+            {id: 192, reference: "127524871", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: 5, description: "Clawback Reversals for Order 127524871", status: "Closed", priority: "Low", branch: "Al Satwa"},
+            {id: 193, reference: "127466629", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: 23, description: "Clawback Reversals for Order 127466629", status: "Closed", priority: "Low", branch: "Al Satwa"},
+            {id: 194, reference: "127418470", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: 18, description: "Clawback Reversals for Order 127418470", status: "Closed", priority: "Low", branch: "Al Satwa"},
+            {id: 195, reference: "127363503", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: 5, description: "Clawback Reversals for Order 127363503", status: "Closed", priority: "Low", branch: "Al Satwa"},
+            {id: 196, reference: "127363503", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: 10, description: "Penalties for Order 127363503", status: "Closed", priority: "Low", branch: "Al Satwa"},
+            {id: 197, reference: "126624489", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: -24, description: "Claw back for Order 126624489 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Satwa"},
+            {id: 198, reference: "126402942", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: -24, description: "Claw back for Order 126402942 Partner Did not Prepare", status: "Closed", priority: "Medium", branch: "Al Satwa"},
+            {id: 199, reference: "126306224", billable_id: "1061662", platform: "Careem", date: "2025-09-01", amount: -45, description: "Claw back for Order 126306224 Partner Did not Prepare", status: "Closed", priority: "High", branch: "Al Satwa"},
+            {id: 200, reference: "128663422", billable_id: "1057118", platform: "Careem", date: "2025-09-01", amount: -18, description: "Food__Customer__Quality Issues__Food is undercooked", status: "Open", priority: "Medium", branch: "Alkhadia"}
+        ];
 
-        // إضافة طلب جديد
-        document.getElementById('orderForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // Initialize variables
+        let currentFilter = "all";
+        let currentPlatformFilter = "all";
+        let currentCase = null;
+        let financialChart = null;
+        let branchChart = null;
+        let disputeChart = null;
+
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
             
-            const brand = document.getElementById('brand').value.trim();
-            const channel = document.getElementById('channel').value;
-            const branch = document.getElementById('branch').value.trim();
-            const status = document.getElementById('status').value;
-            const price = parseFloat(document.getElementById('price').value) || 0;
-            const orderCount = parseInt(document.getElementById('orderCount').value) || 0;
+            // Update nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
             
-            if (!brand || !channel || !branch || !status || price <= 0 || orderCount <= 0) {
-                showNotification('يرجى ملء جميع الحقول بشكل صحيح!', 'error');
-                return;
+            // Initialize charts when analysis section is shown
+            if (sectionId === 'analysis') {
+                initializeCharts();
+            }
+        }
+
+        // Platform filtering
+        function filterByPlatform(platform) {
+            currentPlatformFilter = platform;
+            
+            // Update active button
+            document.querySelectorAll('.platform-filter button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update platform counts
+            updatePlatformCounts();
+            
+            // Render cases
+            renderCases();
+        }
+
+        function updatePlatformCounts() {
+            const careemCount = casesData.filter(c => c.platform === 'Careem').length;
+            const noonCount = casesData.filter(c => c.platform === 'Noon').length;
+            
+            document.getElementById('careemCount').textContent = careemCount;
+            document.getElementById('noonCount').textContent = noonCount;
+        }
+
+        // Dashboard functions
+        function updateDashboard() {
+            const openCases = casesData.filter(c => c.status === "Open").length;
+            const progressCases = casesData.filter(c => c.status === "In Progress").length;
+            const closedCases = casesData.filter(c => c.status === "Closed").length;
+            
+            document.getElementById("totalCases").textContent = casesData.length;
+            document.getElementById("openCases").textContent = openCases;
+            document.getElementById("progressCases").textContent = progressCases;
+            document.getElementById("closedCases").textContent = closedCases;
+        }
+
+        function renderCases() {
+            const tbody = document.getElementById("casesTable");
+            tbody.innerHTML = "";
+            
+            let filteredCases = casesData.filter(c => c.status === "Open");
+            
+            // Filter by platform
+            if (currentPlatformFilter !== "all") {
+                filteredCases = filteredCases.filter(c => c.platform === currentPlatformFilter);
             }
             
-            const order = {
-                id: Date.now(),
-                brand,
-                channel,
-                branch,
-                status,
-                price,
-                orderCount,
-                total: price * orderCount,
-                date: new Date().toISOString().split('T')[0]
-            };
+            // Filter by branch
+            if (currentFilter !== "all") {
+                filteredCases = filteredCases.filter(c => c.branch === currentFilter);
+            }
             
-            orders.push(order);
-            localStorage.setItem('orders', JSON.stringify(orders));
-            
-            // إعادة تعيين النموذج
-            this.reset();
-            
-            // تحديث العرض
-            renderTable();
-            updateDashboard();
-            generateReports();
-            
-            showNotification('تمت إضافة الطلب بنجاح!');
-        });
-
-        // عرض الجدول
-        function renderTable() {
-            const tbody = document.querySelector('#ordersTable tbody');
-            tbody.innerHTML = '';
-            
-            const filterChannel = document.getElementById('filterChannel').value;
-            const filterBranch = document.getElementById('filterBranch').value.toLowerCase();
-            const filterStatus = document.getElementById('filterStatus').value;
-            
-            const filteredOrders = orders.filter(order => {
-                const matchChannel = !filterChannel || order.channel === filterChannel;
-                const matchBranch = !filterBranch || order.branch.toLowerCase().includes(filterBranch);
-                const matchStatus = !filterStatus || order.status === filterStatus;
+            filteredCases.forEach(caseItem => {
+                const row = document.createElement("tr");
+                row.className = `priority-${caseItem.priority}`;
                 
-                return matchChannel && matchBranch && matchStatus;
-            });
-            
-            filteredOrders.forEach(order => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${order.brand}</td>
-                    <td>${order.channel}</td>
-                    <td>${order.branch}</td>
+                row.innerHTML = `
+                    <td>${caseItem.reference}</td>
+                    <td><span class="platform-badge ${caseItem.platform.toLowerCase()}">${caseItem.platform}</span></td>
+                    <td>${caseItem.branch}</td>
+                    <td>${caseItem.date}</td>
+                    <td class="${caseItem.amount < 0 ? 'text-danger' : 'text-success'}">${caseItem.amount > 0 ? '+' : ''}${caseItem.amount}</td>
+                    <td>${caseItem.description}</td>
+                    <td><span class="status-badge status-open">${caseItem.status}</span></td>
+                    <td>${caseItem.priority}</td>
                     <td>
-                        <span class="status ${order.status}">
-                            ${order.status === 'cancelled' ? 'ملغى' : 'مُسَلَّم'}
-                        </span>
-                    </td>
-                    <td>${order.price.toFixed(2)} درهم</td>
-                    <td>${order.orderCount}</td>
-                    <td>${order.total.toFixed(2)} درهم</td>
-                    <td>
-                        <button class="btn btn-danger" onclick="deleteOrder(${order.id})">
-                            <i class="fas fa-trash"></i>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="openStatusModal(${caseItem.id})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="viewDetails(${caseItem.id})">
+                            <i class="bi bi-eye"></i>
                         </button>
                     </td>
                 `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // تحديث لوحة التحكم
-        function updateDashboard() {
-            const totalOrders = orders.length;
-            const cancelledOrders = orders.filter(o => o.status === 'cancelled').length;
-            const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
-            const totalLoss = orders.filter(o => o.status === 'cancelled')
-                .reduce((sum, o) => sum + o.total, 0);
-            const totalRevenue = orders.filter(o => o.status === 'delivered')
-                .reduce((sum, o) => sum + o.total, 0);
-            const cancellationRate = totalOrders > 0 ? 
-                ((cancelledOrders / totalOrders) * 100).toFixed(1) : 0;
-            
-            // إيجاد أكثر قناة إلغاءً
-            const channelCounts = {};
-            orders.filter(o => o.status === 'cancelled').forEach(o => {
-                channelCounts[o.channel] = (channelCounts[o.channel] || 0) + 1;
-            });
-            const topChannel = Object.keys(channelCounts).reduce((a, b) => 
-                channelCounts[a] > channelCounts[b] ? a : b, '-');
-            
-            document.getElementById('totalOrders').textContent = totalOrders;
-            document.getElementById('cancelledOrders').textContent = cancelledOrders;
-            document.getElementById('deliveredOrders').textContent = deliveredOrders;
-            document.getElementById('totalLoss').textContent = totalLoss.toFixed(2) + ' درهم';
-            document.getElementById('cancellationRate').textContent = cancellationRate + '%';
-            document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2) + ' درهم';
-            document.getElementById('topCancellationChannel').textContent = topChannel;
-        }
-
-        // إنشاء التقارير
-        function generateReports() {
-            const reportsContainer = document.getElementById('reportsContainer');
-            
-            // تقرير إجمالي
-            const totalReport = generateTotalReport();
-            
-            // تقرير حسب القناة
-            const channelReport = generateChannelReport();
-            
-            // تقرير حسب الفرع
-            const branchReport = generateBranchReport();
-            
-            reportsContainer.innerHTML = `
-                <div class="report-card">
-                    <h3>تقرير إجمالي</h3>
-                    ${totalReport}
-                </div>
-                <div class="report-card">
-                    <h3>تقرير حسب القناة</h3>
-                    ${channelReport}
-                </div>
-                <div class="report-card">
-                    <h3>تقرير حسب الفرع</h3>
-                    ${branchReport}
-                </div>
-            `;
-        }
-
-        // إنشاء تقرير إجمالي
-        function generateTotalReport() {
-            const totalOrders = orders.length;
-            const cancelledOrders = orders.filter(o => o.status === 'cancelled').length;
-            const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
-            const totalLoss = orders.filter(o => o.status === 'cancelled')
-                .reduce((sum, o) => sum + o.total, 0);
-            const totalRevenue = orders.filter(o => o.status === 'delivered')
-                .reduce((sum, o) => sum + o.total, 0);
-            
-            return `
-                <div class="report-stats">
-                    <div class="report-stat">
-                        <div class="value">${totalOrders}</div>
-                        <div class="label">إجمالي الطلبات</div>
-                    </div>
-                    <div class="report-stat">
-                        <div class="value">${cancelledOrders}</div>
-                        <div class="label">الطلبات الملغاة</div>
-                    </div>
-                    <div class="report-stat">
-                        <div class="value">${deliveredOrders}</div>
-                        <div class="label">الطلبات المُسَلَّمة</div>
-                    </div>
-                    <div class="report-stat">
-                        <div class="value">${totalLoss.toFixed(2)} درهم</div>
-                        <div class="label">إجمالي الخسائر</div>
-                    </div>
-                    <div class="report-stat">
-                        <div class="value">${totalRevenue.toFixed(2)} درهم</div>
-                        <div class="label">إجمالي الإيرادات</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // إنشاء تقرير حسب القناة
-        function generateChannelReport() {
-            const channels = ['Careem', 'Zomato', 'Talabat', 'UberEats'];
-            let reportHtml = '<div class="report-stats">';
-            
-            channels.forEach(channel => {
-                const channelOrders = orders.filter(o => o.channel === channel);
-                const channelCancelled = channelOrders.filter(o => o.status === 'cancelled').length;
-                const channelDelivered = channelOrders.filter(o => o.status === 'delivered').length;
-                const channelLoss = channelOrders.filter(o => o.status === 'cancelled')
-                    .reduce((sum, o) => sum + o.total, 0);
-                const channelRevenue = channelOrders.filter(o => o.status === 'delivered')
-                    .reduce((sum, o) => sum + o.total, 0);
                 
-                reportHtml += `
-                    <div class="report-stat">
-                        <div class="value">${channel}</div>
-                        <div class="label">${channelCancelled} ملغى / ${channelDelivered} مُسَلَّم</div>
-                        <div class="label">${channelLoss.toFixed(2)} درهم خسارة</div>
-                        <div class="label">${channelRevenue.toFixed(2)} درهم إيراد</div>
-                    </div>
-                `;
+                tbody.appendChild(row);
             });
-            
-            reportHtml += '</div>';
-            return reportHtml;
         }
 
-        // إنشاء تقرير حسب الفرع
-        function generateBranchReport() {
-            const branches = [...new Set(orders.map(o => o.branch))];
-            let reportHtml = '<div class="report-stats">';
+        function logActivity(action, details) {
+            const logContainer = document.getElementById("activityLog");
+            const timestamp = new Date().toLocaleString();
+            
+            const logItem = document.createElement("div");
+            logItem.className = "mb-3 p-3 bg-light rounded-3";
+            logItem.innerHTML = `
+                <div class="d-flex justify-content-between">
+                    <span class="fw-bold">${action}</span>
+                    <small class="text-muted">${timestamp}</small>
+                </div>
+                <div class="mt-2">${details}</div>
+            `;
+            
+            logContainer.insertBefore(logItem, logContainer.firstChild);
+        }
+
+        // Branch management functions
+        function renderBranches() {
+            const tbody = document.getElementById("branchesTable");
+            tbody.innerHTML = "";
+            
+            const branches = [...new Set(casesData.map(c => c.branch))];
             
             branches.forEach(branch => {
-                const branchOrders = orders.filter(o => o.branch === branch);
-                const branchCancelled = branchOrders.filter(o => o.status === 'cancelled').length;
-                const branchDelivered = branchOrders.filter(o => o.status === 'delivered').length;
-                const branchLoss = branchOrders.filter(o => o.status === 'cancelled')
-                    .reduce((sum, o) => sum + o.total, 0);
-                const branchRevenue = branchOrders.filter(o => o.status === 'delivered')
-                    .reduce((sum, o) => sum + o.total, 0);
+                const branchCases = casesData.filter(c => c.branch === branch);
+                const openCases = branchCases.filter(c => c.status === "Open").length;
+                const closedCases = branchCases.filter(c => c.status === "Closed").length;
+                const totalDeduction = branchCases.filter(c => c.amount < 0).reduce((sum, c) => sum + Math.abs(c.amount), 0);
+                const totalReversal = branchCases.filter(c => c.amount > 0).reduce((sum, c) => sum + c.amount, 0);
+                const closureRate = branchCases.length > 0 ? (closedCases / branchCases.length * 100).toFixed(1) : 0;
                 
-                reportHtml += `
-                    <div class="report-stat">
-                        <div class="value">${branch}</div>
-                        <div class="label">${branchCancelled} ملغى / ${branchDelivered} مُسَلَّم</div>
-                        <div class="label">${branchLoss.toFixed(2)} درهم خسارة</div>
-                        <div class="label">${branchRevenue.toFixed(2)} درهم إيراد</div>
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${branch}</td>
+                    <td>
+                        ${branchCases.filter(c => c.platform === 'Careem').length > 0 ? '<span class="platform-badge careem">Careem</span>' : ''}
+                        ${branchCases.filter(c => c.platform === 'Noon').length > 0 ? '<span class="platform-badge noon">Noon</span>' : ''}
+                    </td>
+                    <td>${branchCases.length}</td>
+                    <td>${openCases}</td>
+                    <td>${closureRate}%</td>
+                    <td class="text-danger">-$${totalDeduction.toFixed(2)}</td>
+                    <td class="text-success">+$${totalReversal.toFixed(2)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewBranchDetails('${branch}')">
+                            <i class="bi bi-eye"></i> View Details
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function showAddBranchForm() {
+            alert("Add new branch functionality will be implemented soon");
+        }
+
+        // Report functions
+        function generateWeeklyReport() {
+            const platform = document.getElementById("weeklyPlatform").value;
+            const branch = document.getElementById("weeklyBranch").value;
+            const reportContainer = document.getElementById("weeklyReport");
+            
+            let filteredCases = casesData.filter(c => {
+                const caseDate = new Date(c.date);
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                return caseDate >= weekAgo;
+            });
+            
+            if (platform !== "all") {
+                filteredCases = filteredCases.filter(c => c.platform === platform);
+            }
+            
+            if (branch !== "all") {
+                filteredCases = filteredCases.filter(c => c.branch === branch);
+            }
+            
+            const openCases = filteredCases.filter(c => c.status === "Open").length;
+            const closedCases = filteredCases.filter(c => c.status === "Closed").length;
+            const totalDeduction = filteredCases.filter(c => c.amount < 0).reduce((sum, c) => sum + Math.abs(c.amount), 0);
+            
+            reportContainer.innerHTML = `
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6>Weekly Report (${platform === "all" ? "All Platforms" : platform} - ${branch === "all" ? "All Branches" : branch})</h6>
+                        <p>Total Cases: ${filteredCases.length}</p>
+                        <p>Open Cases: ${openCases}</p>
+                        <p>Closed Cases: ${closedCases}</p>
+                        <p>Total Deductions: $${totalDeduction.toFixed(2)}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateMonthlyReport() {
+            const platform = document.getElementById("monthlyPlatform").value;
+            const branch = document.getElementById("monthlyBranch").value;
+            const reportContainer = document.getElementById("monthlyReport");
+            
+            let filteredCases = casesData.filter(c => {
+                const caseDate = new Date(c.date);
+                const monthAgo = new Date();
+                monthAgo.setMonth(monthAgo.getMonth() - 1);
+                return caseDate >= monthAgo;
+            });
+            
+            if (platform !== "all") {
+                filteredCases = filteredCases.filter(c => c.platform === platform);
+            }
+            
+            if (branch !== "all") {
+                filteredCases = filteredCases.filter(c => c.branch === branch);
+            }
+            
+            const openCases = filteredCases.filter(c => c.status === "Open").length;
+            const closedCases = filteredCases.filter(c => c.status === "Closed").length;
+            const totalDeduction = filteredCases.filter(c => c.amount < 0).reduce((sum, c) => sum + Math.abs(c.amount), 0);
+            
+            reportContainer.innerHTML = `
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6>Monthly Report (${platform === "all" ? "All Platforms" : platform} - ${branch === "all" ? "All Branches" : branch})</h6>
+                        <p>Total Cases: ${filteredCases.length}</p>
+                        <p>Open Cases: ${openCases}</p>
+                        <p>Closed Cases: ${closedCases}</p>
+                        <p>Total Deductions: $${totalDeduction.toFixed(2)}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // New data entry
+        document.getElementById("newCaseForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const newCase = {
+                id: casesData.length + 1,
+                reference: document.getElementById("newRefId").value,
+                billable_id: document.getElementById("newBillId").value,
+                platform: document.getElementById("newPlatform").value,
+                date: document.getElementById("newDate").value,
+                amount: parseFloat(document.getElementById("newAmount").value),
+                description: document.getElementById("newDescription").value,
+                status: "Open",
+                priority: document.getElementById("newPriority").value,
+                branch: document.getElementById("newBranch").value
+            };
+            
+            casesData.push(newCase);
+            logActivity("New Case Added", 
+                `Ref ID: ${newCase.reference}<br>
+                 Platform: ${newCase.platform}<br>
+                 Branch: ${newCase.branch}<br>
+                 Amount: ${newCase.amount}`
+            );
+            
+            updateDashboard();
+            renderCases();
+            renderBranches();
+            
+            // Reset form
+            document.getElementById("newCaseForm").reset();
+            
+            alert("Case added successfully!");
+        });
+
+        // Analysis functions
+        function initializeCharts() {
+            // Financial Chart
+            const financialCtx = document.getElementById("financialChart").getContext("2d");
+            const branches = [...new Set(casesData.map(c => c.branch))];
+            
+            const financialData = branches.map(branch => {
+                const branchCases = casesData.filter(c => c.branch === branch);
+                const deduction = branchCases.filter(c => c.amount < 0).reduce((sum, c) => sum + Math.abs(c.amount), 0);
+                const reversal = branchCases.filter(c => c.amount > 0).reduce((sum, c) => sum + c.amount, 0);
+                return {
+                    branch,
+                    deduction,
+                    reversal
+                };
+            });
+            
+            if (financialChart) financialChart.destroy();
+            financialChart = new Chart(financialCtx, {
+                type: "bar",
+                data: {
+                    labels: branches,
+                    datasets: [
+                        {
+                            label: "Deductions",
+                            data: financialData.map(d => d.deduction),
+                            backgroundColor: "rgba(220, 53, 69, 0.7)",
+                            borderColor: "rgba(220, 53, 69, 1)",
+                            borderWidth: 1
+                        },
+                        {
+                            label: "Reversals",
+                            data: financialData.map(d => d.reversal),
+                            backgroundColor: "rgba(40, 167, 69, 0.7)",
+                            borderColor: "rgba(40, 167, 69, 1)",
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: "Financial Overview by Branch"
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Branch Distribution Chart
+            const branchCtx = document.getElementById("branchChart").getContext("2d");
+            const branchCounts = branches.map(branch => {
+                return casesData.filter(c => c.branch === branch).length;
+            });
+            
+            if (branchChart) branchChart.destroy();
+            branchChart = new Chart(branchCtx, {
+                type: "pie",
+                data: {
+                    labels: branches,
+                    datasets: [{
+                        data: branchCounts,
+                        backgroundColor: [
+                            "rgba(255, 99, 132, 0.7)",
+                            "rgba(54, 162, 235, 0.7)",
+                            "rgba(255, 206, 86, 0.7)",
+                            "rgba(75, 192, 192, 0.7)",
+                            "rgba(153, 102, 255, 0.7)",
+                            "rgba(255, 159, 64, 0.7)",
+                            "rgba(199, 199, 199, 0.7)",
+                            "rgba(83, 102, 255, 0.7)"
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: "Cases Distribution by Branch"
+                        }
+                    }
+                }
+            });
+            
+            // Dispute Types Chart
+            const disputeCtx = document.getElementById("disputeChart").getContext("2d");
+            const disputeTypes = ["Spilled / damaged", "Missing items", "Wrong item", "Food quality", "Other"];
+            const disputeCounts = [
+                casesData.filter(c => c.description.includes("Spilled")).length,
+                casesData.filter(c => c.description.includes("Missing")).length,
+                casesData.filter(c => c.description.includes("Wrong")).length,
+                casesData.filter(c => c.description.includes("undercooked") || c.description.includes("not edible")).length,
+                casesData.filter(c => !disputeTypes.some(type => c.description.includes(type))).length
+            ];
+            
+            if (disputeChart) disputeChart.destroy();
+            disputeChart = new Chart(disputeCtx, {
+                type: "doughnut",
+                data: {
+                    labels: disputeTypes,
+                    datasets: [{
+                        data: disputeCounts,
+                        backgroundColor: [
+                            "rgba(255, 99, 132, 0.7)",
+                            "rgba(54, 162, 235, 0.7)",
+                            "rgba(255, 206, 86, 0.7)",
+                            "rgba(75, 192, 192, 0.7)",
+                            "rgba(153, 102, 255, 0.7)"
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: "Dispute Types"
+                        }
+                    }
+                }
+            });
+            
+            // Branch Performance Cards
+            const performanceContainer = document.getElementById("branchPerformance");
+            performanceContainer.innerHTML = "";
+            
+            branches.forEach(branch => {
+                const branchCases = casesData.filter(c => c.branch === branch);
+                const openCases = branchCases.filter(c => c.status === "Open").length;
+                const closedCases = branchCases.filter(c => c.status === "Closed").length;
+                const closureRate = branchCases.length > 0 ? (closedCases / branchCases.length * 100).toFixed(1) : 0;
+                
+                const card = document.createElement("div");
+                card.className = "col-md-4 mb-3";
+                card.innerHTML = `
+                    <div class="branch-card">
+                        <div class="card-header">
+                            <h6>${branch}</h6>
+                        </div>
+                        <div class="card-body">
+                            <p>Total Cases: ${branchCases.length}</p>
+                            <p>Open Cases: <span class="text-warning">${openCases}</span></p>
+                            <p>Closure Rate: <span class="text-success">${closureRate}%</span></p>
+                        </div>
                     </div>
                 `;
+                
+                performanceContainer.appendChild(card);
             });
-            
-            reportHtml += '</div>';
-            return reportHtml;
         }
 
-        // حذف طلب
-        function deleteOrder(id) {
-            if (confirm('هل أنت متأكد من حذف هذا الطلب؟')) {
-                orders = orders.filter(o => o.id !== id);
-                localStorage.setItem('orders', JSON.stringify(orders));
-                renderTable();
-                updateDashboard();
-                generateReports();
-                showNotification('تم حذف الطلب بنجاح!');
-            }
-        }
-
-        // تصدير CSV
-        function exportToCSV() {
-            let csv = "الماركة,القناة,الفرع,الحالة,السعر,عدد الطلبات,المجموع,التاريخ\n";
-            
-            orders.forEach(order => {
-                csv += `${order.brand},${order.channel},${order.branch},${order.status === 'cancelled' ? 'ملغى' : 'مُسَلَّم'},${order.price},${order.orderCount},${order.total},${order.date}\n`;
+        // Event listeners
+        document.querySelectorAll("#branchFilter .branch-btn").forEach(btn => {
+            btn.addEventListener("click", function() {
+                document.querySelectorAll("#branchFilter .branch-btn").forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+                currentFilter = this.dataset.branch;
+                renderCases();
             });
-            
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', `orders_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showNotification('تم تصدير الملف بنجاح!');
-        }
-
-        // تصدير PDF
-        function exportToPDF() {
-            const element = document.querySelector('.container');
-            const opt = {
-                margin: 10,
-                filename: `orders_report_${new Date().toISOString().split('T')[0]}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            
-            html2pdf().set(opt).from(element).save();
-            
-            showNotification('تم تصدير التقرير بنجاح!');
-        }
-
-        // إرسال التقرير
-        function sendReport(method) {
-            const reportData = {
-                total: generateTotalReport(),
-                channels: generateChannelReport(),
-                branches: generateBranchReport()
-            };
-            
-            if (method === 'email') {
-                // في التطبيق الحقيقي، سيتم إرسال الإيميل عبر API
-                showNotification('سيتم إرسال التقرير عبر الإيميل قريباً!');
-            } else if (method === 'whatsapp') {
-                // في التطبيق الحقيقي، سيتم إرسال الرسالة عبر API
-                showNotification('سيتم إرسال التقرير عبر واتساب قريباً!');
-            }
-        }
-
-        // عرض الإشعارات
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            
-            document.getElementById('notifications').appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-
-        // تحميل البيانات عند فتح الصفحة
-        document.addEventListener('DOMContentLoaded', function() {
-            renderTable();
-            updateDashboard();
-            generateReports();
         });
+
+        document.getElementById("updateStatusBtn").addEventListener("click", function() {
+            const newStatus = document.getElementById("newStatus").value;
+            const notes = document.getElementById("statusNotes").value;
+            
+            currentCase.status = newStatus;
+            
+            logActivity("Status Updated", 
+                `Ref ID: ${currentCase.reference}<br>
+                 Platform: ${currentCase.platform}<br>
+                 Branch: ${currentCase.branch}<br>
+                 New Status: ${newStatus}<br>
+                 Notes: ${notes || "No notes"}`
+            );
+            
+            updateDashboard();
+            renderCases();
+            bootstrap.Modal.getInstance(document.getElementById("statusModal")).hide();
+        });
+
+        function openStatusModal(caseId) {
+            currentCase = casesData.find(c => c.id === caseId);
+            document.getElementById("newStatus").value = currentCase.status;
+            document.getElementById("statusNotes").value = "";
+            new bootstrap.Modal(document.getElementById("statusModal")).show();
+        }
+
+        function viewDetails(caseId) {
+            const caseItem = casesData.find(c => c.id === caseId);
+            alert(`Case Details:\n\nRef ID: ${caseItem.reference}\nPlatform: ${caseItem.platform}\nBranch: ${caseItem.branch}\nDate: ${caseItem.date}\nAmount: ${caseItem.amount}\nDescription: ${caseItem.description}\nStatus: ${caseItem.status}\nPriority: ${caseItem.priority}`);
+        }
+
+        function viewBranchDetails(branch) {
+            const branchCases = casesData.filter(c => c.branch === branch);
+            alert(`Branch Details: ${branch}\n\nTotal Cases: ${branchCases.length}\n\nTop Cases:\n${branchCases.slice(0, 5).map(c => `${c.reference}: ${c.description}`).join('\n')}`);
+        }
+
+        // Initialize
+        updateDashboard();
+        renderCases();
+        renderBranches();
+        updatePlatformCounts();
+        logActivity("System Started", "Dispute Adjustment Tracking System initialized with 200 Careem cases");
     </script>
 </body>
 </html>
